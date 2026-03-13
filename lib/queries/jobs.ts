@@ -5,7 +5,7 @@ import {
   fetchJobDetail,
   fetchJobs,
   fetchSalaryLevels,
-} from '@/lib/api/jobs';
+} from '@/lib/api/jobs.client';
 
 interface JobListQueryParams {
   companyName?: string;

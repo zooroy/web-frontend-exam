@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
 
-import { getSalaryList } from '@/lib/utils/mockApi';
+import salaryListData from '@/data/salaryList';
+import type { SalaryItem } from '@/types/api';
 
 export async function GET() {
   try {
-    return NextResponse.json(getSalaryList(), { status: 200 });
+    return NextResponse.json(salaryListData as SalaryItem[], {
+      status: 200,
+    });
   } catch {
     return NextResponse.json(
       { message: 'Internal server error' },
