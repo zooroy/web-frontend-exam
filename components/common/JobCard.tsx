@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import {
   BookOutlineIcon,
   PersonOutlineIcon,
@@ -8,9 +10,9 @@ import { cn } from '@/lib/utils';
 import type { JobListItem } from '@/types/api';
 
 interface JobCardProps {
+  detailHref: string;
   educationLabel: string;
   job: JobListItem;
-  onDetailClick: () => void;
   salaryLabel: string;
   selected?: boolean;
 }
@@ -30,9 +32,9 @@ function InformationRow({ children, icon: Icon }: InformationRowProps) {
 }
 
 export function JobCard({
+  detailHref,
   educationLabel,
   job,
-  onDetailClick,
   salaryLabel,
   selected = false,
 }: JobCardProps) {
@@ -64,13 +66,13 @@ export function JobCard({
         </p>
       </CardContent>
       <CardFooter className="justify-center rounded-none border-0 bg-background px-0 py-0">
-        <button
-          type="button"
+        <Link
+          href={detailHref}
+          scroll={false}
           className="body2 font-bold text-primary transition-colors hover:text-accent"
-          onClick={onDetailClick}
         >
           查看細節
-        </button>
+        </Link>
       </CardFooter>
     </Card>
   );

@@ -22,27 +22,6 @@ interface DetailDialogProps {
   open: boolean;
 }
 
-function DetailDialogLoadingState() {
-  return (
-    <div className="flex min-h-[420px] flex-col gap-6 sm:min-h-[460px]">
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 animate-pulse rounded-full bg-[var(--color-gray-300)]" />
-        <div className="grid flex-1 gap-2">
-          <div className="h-5 w-28 animate-pulse rounded bg-[var(--color-gray-300)]" />
-          <div className="h-5 w-20 animate-pulse rounded bg-[var(--color-gray-300)]" />
-        </div>
-      </div>
-      <div className="aspect-[16/9] w-full animate-pulse rounded-[8px] bg-[var(--color-gray-300)]" />
-      <div className="grid gap-3">
-        <div className="h-4 w-full animate-pulse rounded bg-[var(--color-gray-300)]" />
-        <div className="h-4 w-full animate-pulse rounded bg-[var(--color-gray-300)]" />
-        <div className="h-4 w-5/6 animate-pulse rounded bg-[var(--color-gray-300)]" />
-        <div className="h-4 w-4/6 animate-pulse rounded bg-[var(--color-gray-300)]" />
-      </div>
-    </div>
-  );
-}
-
 export function DetailDialog({ job, onClose, open }: DetailDialogProps) {
   return (
     <Dialog
@@ -66,17 +45,13 @@ export function DetailDialog({ job, onClose, open }: DetailDialogProps) {
               {job?.jobTitle ?? '工作詳細資訊'}
             </DialogTitle>
           </DialogHeader>
-          {job ? (
-            <div className="flex min-h-[420px] flex-col gap-6 sm:min-h-[460px]">
-              <DetailCarousel images={job.companyPhoto} />
-              <div
-                className="body2 max-h-[42vh] overflow-y-auto font-normal leading-7 text-foreground [&_a]:font-bold [&_a]:text-primary [&_a]:underline [&_h1]:body4 [&_h1]:font-bold [&_h2]:body3 [&_h2]:mt-5 [&_h2]:font-bold [&_li]:ml-5 [&_li]:list-disc [&_p]:mt-4"
-                dangerouslySetInnerHTML={{ __html: job.description }}
-              />
-            </div>
-          ) : (
-            <DetailDialogLoadingState />
-          )}
+          <div className="flex min-h-[420px] flex-col gap-6 sm:min-h-[460px]">
+            <DetailCarousel images={job?.companyPhoto ?? []} />
+            <div
+              className="body2 max-h-[42vh] overflow-y-auto font-normal leading-7 text-foreground [&_a]:font-bold [&_a]:text-primary [&_a]:underline [&_h1]:body4 [&_h1]:font-bold [&_h2]:body3 [&_h2]:mt-5 [&_h2]:font-bold [&_li]:ml-5 [&_li]:list-disc [&_p]:mt-4"
+              dangerouslySetInnerHTML={{ __html: job?.description ?? '' }}
+            />
+          </div>
           <DialogFooter className="-mx-5 -mb-6 border-[var(--border-default)] bg-background px-5 py-4 sm:-mx-8 sm:px-8">
             <DialogClose asChild>
               <Button

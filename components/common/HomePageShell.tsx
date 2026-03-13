@@ -1,31 +1,29 @@
-'use client';
-
-import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { startTransition, useMemo, useState } from 'react';
+import Link from 'next/link';
 
-import { BrandButton } from '@/components/common/BrandButton';
-import { DetailDialog } from '@/components/common/DetailDialog';
-import { FilterSelect } from '@/components/common/FilterSelect';
-import { FilterTextField } from '@/components/common/FilterTextField';
+import { DetailDialogController } from '@/components/common/DetailDialogController';
 import { HeroSection } from '@/components/common/HeroSection';
 import { JobCard } from '@/components/common/JobCard';
-import { useResponsiveMode } from '@/hooks/useResponsiveMode';
-import { jobQueries } from '@/lib/queries/jobs';
+import { JobFilters } from '@/components/common/JobFilters';
 import { cn } from '@/lib/utils';
-import type { EducationItem, JobListResponse, SalaryItem } from '@/types/api';
+import {
+  createJobSearchParams,
+  type JobSearchState,
+} from '@/lib/utils/jobSearchParams';
+import type {
+  EducationItem,
+  JobDetail,
+  JobListResponse,
+  SalaryItem,
+} from '@/types/api';
 
 interface HomePageShellProps {
-  initialEducationLevels: EducationItem[];
+  detailJob: JobDetail | null;
+  educationLevels: EducationItem[];
   initialMode: 'desktop' | 'mobile';
-  initialJobs: JobListResponse;
-  initialSalaryLevels: SalaryItem[];
-}
-
-interface FiltersState {
-  companyName: string;
-  educationLevel?: number;
-  salaryLevel?: number;
+  jobs: JobListResponse;
+  salaryLevels: SalaryItem[];
+  searchState: JobSearchState;
 }
 
 type PaginationItem = number | 'ellipsis';
@@ -69,105 +67,39 @@ function buildPaginationItems(
   ];
 }
 
+function buildHref(
+  searchState: JobSearchState,
+  overrides: Partial<JobSearchState>,
+) {
+  const searchParams = createJobSearchParams({
+    companyName: searchState.companyName,
+    detailId: searchState.detailId,
+    educationLevel: searchState.educationLevel,
+    page: searchState.page,
+    salaryLevel: searchState.salaryLevel,
+    ...overrides,
+  });
+  const search = searchParams.toString();
+
+  return search ? `/?${search}` : '/';
+}
+
 export function HomePageShell({
-  initialEducationLevels,
+  detailJob,
+  educationLevels,
   initialMode,
-  initialJobs,
-  initialSalaryLevels,
+  jobs,
+  salaryLevels,
+  searchState,
 }: HomePageShellProps) {
-  const mode = useResponsiveMode(initialMode);
-  const isDesktop = mode === 'desktop';
-  const perPage = isDesktop ? 6 : 4;
-
-  const [filters, setFilters] = useState<FiltersState>({ companyName: '' });
-  const [draftCompanyName, setDraftCompanyName] = useState('');
-  const [page, setPage] = useState(1);
-  const [selectedEducation, setSelectedEducation] = useState<string>('');
-  const [selectedSalary, setSelectedSalary] = useState<string>('');
-  const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
-  const shouldUseInitialJobs =
-    page === 1 &&
-    !filters.companyName &&
-    typeof filters.educationLevel === 'undefined' &&
-    typeof filters.salaryLevel === 'undefined' &&
-    initialJobs.data.length === perPage;
-
-  const jobsQuery = useQuery({
-    ...jobQueries.list({
-      companyName: filters.companyName || undefined,
-      educationLevel: filters.educationLevel,
-      page,
-      perPage,
-      salaryLevel: filters.salaryLevel,
-    }),
-    initialData: shouldUseInitialJobs ? initialJobs : undefined,
-    placeholderData: (previousData) => previousData,
-  });
-
-  const educationLevelsQuery = useQuery({
-    ...jobQueries.educationLevels(),
-    initialData: initialEducationLevels,
-  });
-  const salaryLevelsQuery = useQuery({
-    ...jobQueries.salaryLevels(),
-    initialData: initialSalaryLevels,
-  });
-  const detailQuery = useQuery({
-    ...jobQueries.detail(selectedJobId ?? 1),
-    enabled: selectedJobId !== null,
-  });
-
-  const educationMap = useMemo(
-    () => buildLabelMap(educationLevelsQuery.data),
-    [educationLevelsQuery.data],
+  const isDesktop = initialMode === 'desktop';
+  const educationMap = buildLabelMap(educationLevels);
+  const salaryMap = buildLabelMap(salaryLevels);
+  const totalPages = Math.max(1, Math.ceil(jobs.total / (isDesktop ? 6 : 4)));
+  const condensedPaginationItems = buildPaginationItems(
+    searchState.page,
+    totalPages,
   );
-  const salaryMap = useMemo(
-    () => buildLabelMap(salaryLevelsQuery.data),
-    [salaryLevelsQuery.data],
-  );
-
-  function handleSearch() {
-    startTransition(() => {
-      setPage(1);
-      setFilters({
-        companyName: draftCompanyName.trim(),
-        educationLevel: selectedEducation
-          ? Number(selectedEducation)
-          : undefined,
-        salaryLevel: selectedSalary ? Number(selectedSalary) : undefined,
-      });
-    });
-  }
-
-  function handleCloseDetail() {
-    setSelectedJobId(null);
-  }
-
-  function handlePageChange(nextPage: number) {
-    if (nextPage < 1 || nextPage > totalPages || nextPage === page) {
-      return;
-    }
-
-    startTransition(() => {
-      setPage(nextPage);
-    });
-  }
-
-  const desktopFilterOptionsEducation = educationLevelsQuery.data.map(
-    (item) => ({
-      value: String(item.id),
-      label: item.label,
-    }),
-  );
-  const desktopFilterOptionsSalary = salaryLevelsQuery.data.map((item) => ({
-    value: String(item.id),
-    label: item.label,
-  }));
-  const totalPages = Math.max(
-    1,
-    Math.ceil((jobsQuery.data?.total ?? 0) / perPage),
-  );
-  const condensedPaginationItems = buildPaginationItems(page, totalPages);
   const fullPaginationItems = Array.from(
     { length: totalPages },
     (_, index) => index + 1,
@@ -187,35 +119,13 @@ export function HomePageShell({
                 </h1>
               </div>
             </header>
-            {isDesktop ? (
-              <div className="grid items-end gap-[18px] lg:grid-cols-[minmax(0,1.33fr)_minmax(0,1fr)_minmax(0,1fr)_104px]">
-                <FilterTextField
-                  label="公司名稱"
-                  placeholder="輸入公司名稱"
-                  value={draftCompanyName}
-                  onChange={(event) => {
-                    setDraftCompanyName(event.target.value);
-                  }}
-                />
-                <FilterSelect
-                  label="學歷"
-                  placeholder="請選擇學歷"
-                  value={selectedEducation}
-                  onValueChange={setSelectedEducation}
-                  options={desktopFilterOptionsEducation}
-                />
-                <FilterSelect
-                  label="薪資範圍"
-                  placeholder="請選擇薪資條件"
-                  value={selectedSalary}
-                  onValueChange={setSelectedSalary}
-                  options={desktopFilterOptionsSalary}
-                />
-                <BrandButton className="w-full px-0" onClick={handleSearch}>
-                  條件搜尋
-                </BrandButton>
-              </div>
-            ) : null}
+            <JobFilters
+              educationLevels={educationLevels}
+              initialCompanyName={searchState.companyName}
+              initialEducationLevel={searchState.educationLevel}
+              initialSalaryLevel={searchState.salaryLevel}
+              salaryLevels={salaryLevels}
+            />
             <div
               className={
                 isDesktop
@@ -223,75 +133,86 @@ export function HomePageShell({
                   : 'grid grid-cols-1 gap-4'
               }
             >
-              {jobsQuery.data?.data.map((job) => (
+              {jobs.data.map((job) => (
                 <JobCard
                   key={job.id}
+                  detailHref={buildHref(searchState, {
+                    detailId: job.id,
+                  })}
                   job={job}
                   educationLabel={educationMap.get(job.educationId) ?? '未提供'}
                   salaryLabel={salaryMap.get(job.salaryId) ?? '未提供'}
-                  selected={selectedJobId === job.id}
-                  onDetailClick={() => {
-                    setSelectedJobId(job.id);
-                  }}
+                  selected={searchState.detailId === job.id}
                 />
               ))}
             </div>
             {totalPages > 1 ? (
               <nav aria-label="工作列表分頁" className="mt-auto pt-1">
                 <div className="hidden items-center justify-center gap-[18px] sm:flex">
-                  <button
-                    type="button"
+                  <Link
+                    href={buildHref(searchState, {
+                      detailId: undefined,
+                      page: Math.max(searchState.page - 1, 1),
+                    })}
                     aria-label="上一頁"
-                    disabled={page === 1}
-                    className="flex h-8 w-8 items-center justify-center text-[var(--color-gray-700)] transition-colors hover:text-foreground disabled:text-[var(--color-gray-500)]"
-                    onClick={() => {
-                      handlePageChange(page - 1);
-                    }}
+                    className={cn(
+                      'flex h-8 w-8 items-center justify-center text-[var(--color-gray-700)] transition-colors hover:text-foreground',
+                      searchState.page === 1 &&
+                        'pointer-events-none text-[var(--color-gray-500)]',
+                    )}
                   >
                     <ChevronLeft className="size-5" />
-                  </button>
+                  </Link>
                   {fullPaginationItems.map((pageNumber) => (
-                    <button
+                    <Link
                       key={pageNumber}
-                      type="button"
-                      aria-current={page === pageNumber ? 'page' : undefined}
+                      href={buildHref(searchState, {
+                        detailId: undefined,
+                        page: pageNumber,
+                      })}
+                      aria-current={
+                        searchState.page === pageNumber ? 'page' : undefined
+                      }
                       className={cn(
                         'body2 flex h-8 min-w-8 items-center justify-center rounded-full px-2 font-normal transition-colors',
-                        page === pageNumber
+                        searchState.page === pageNumber
                           ? 'bg-[var(--color-gray-300)] text-foreground'
                           : 'text-foreground hover:text-[var(--color-gray-700)]',
                       )}
-                      onClick={() => {
-                        handlePageChange(pageNumber);
-                      }}
                     >
                       {pageNumber}
-                    </button>
+                    </Link>
                   ))}
-                  <button
-                    type="button"
+                  <Link
+                    href={buildHref(searchState, {
+                      detailId: undefined,
+                      page: Math.min(searchState.page + 1, totalPages),
+                    })}
                     aria-label="下一頁"
-                    disabled={page === totalPages}
-                    className="flex h-8 w-8 items-center justify-center text-[var(--color-gray-700)] transition-colors hover:text-foreground disabled:text-[var(--color-gray-500)]"
-                    onClick={() => {
-                      handlePageChange(page + 1);
-                    }}
+                    className={cn(
+                      'flex h-8 w-8 items-center justify-center text-[var(--color-gray-700)] transition-colors hover:text-foreground',
+                      searchState.page === totalPages &&
+                        'pointer-events-none text-[var(--color-gray-500)]',
+                    )}
                   >
                     <ChevronRight className="size-5" />
-                  </button>
+                  </Link>
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 sm:hidden">
-                  <button
-                    type="button"
+                  <Link
+                    href={buildHref(searchState, {
+                      detailId: undefined,
+                      page: Math.max(searchState.page - 1, 1),
+                    })}
                     aria-label="上一頁"
-                    disabled={page === 1}
-                    className="flex h-8 w-8 items-center justify-center text-[var(--color-gray-700)] transition-colors hover:text-foreground disabled:text-[var(--color-gray-500)]"
-                    onClick={() => {
-                      handlePageChange(page - 1);
-                    }}
+                    className={cn(
+                      'flex h-8 w-8 items-center justify-center text-[var(--color-gray-700)] transition-colors hover:text-foreground',
+                      searchState.page === 1 &&
+                        'pointer-events-none text-[var(--color-gray-500)]',
+                    )}
                   >
                     <ChevronLeft className="size-5" />
-                  </button>
+                  </Link>
                   {condensedPaginationItems.map((item, index) => {
                     if (item === 'ellipsis') {
                       return (
@@ -305,45 +226,53 @@ export function HomePageShell({
                     }
 
                     return (
-                      <button
+                      <Link
                         key={`pagination-slot-${index + 1}`}
-                        type="button"
-                        aria-current={page === item ? 'page' : undefined}
+                        href={buildHref(searchState, {
+                          detailId: undefined,
+                          page: item,
+                        })}
+                        aria-current={
+                          searchState.page === item ? 'page' : undefined
+                        }
                         className={cn(
                           'body2 flex h-8 min-w-8 items-center justify-center rounded-full px-2 font-normal transition-colors',
-                          page === item
+                          searchState.page === item
                             ? 'bg-[var(--color-gray-300)] text-foreground'
                             : 'text-foreground hover:text-[var(--color-gray-700)]',
                         )}
-                        onClick={() => {
-                          handlePageChange(item);
-                        }}
                       >
                         {item}
-                      </button>
+                      </Link>
                     );
                   })}
-                  <button
-                    type="button"
+                  <Link
+                    href={buildHref(searchState, {
+                      detailId: undefined,
+                      page: Math.min(searchState.page + 1, totalPages),
+                    })}
                     aria-label="下一頁"
-                    disabled={page === totalPages}
-                    className="flex h-8 w-8 items-center justify-center text-[var(--color-gray-700)] transition-colors hover:text-foreground disabled:text-[var(--color-gray-500)]"
-                    onClick={() => {
-                      handlePageChange(page + 1);
-                    }}
+                    className={cn(
+                      'flex h-8 w-8 items-center justify-center text-[var(--color-gray-700)] transition-colors hover:text-foreground',
+                      searchState.page === totalPages &&
+                        'pointer-events-none text-[var(--color-gray-500)]',
+                    )}
                   >
                     <ChevronRight className="size-5" />
-                  </button>
+                  </Link>
                 </div>
               </nav>
             ) : null}
           </div>
         </section>
       </main>
-      <DetailDialog
-        open={selectedJobId !== null}
-        onClose={handleCloseDetail}
-        job={detailQuery.data ?? null}
+      <DetailDialogController
+        companyName={searchState.companyName}
+        educationLevel={searchState.educationLevel}
+        job={detailJob}
+        open={Boolean(searchState.detailId && detailJob)}
+        page={searchState.page}
+        salaryLevel={searchState.salaryLevel}
       />
     </div>
   );
