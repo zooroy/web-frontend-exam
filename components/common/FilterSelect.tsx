@@ -32,19 +32,22 @@ export function FilterSelect({
   value,
 }: FilterSelectProps) {
   return (
-    <label className="flex w-full min-w-0 flex-col gap-2">
-      <span className="body1 font-bold text-muted-foreground">{label}</span>
+    <div className="relative h-[56px] w-full min-w-0">
+      <label className="body1 absolute top-0 left-3 z-10 -translate-y-1/2 bg-[var(--color-gray-100)] px-1 font-normal leading-none text-foreground">
+        {label}
+      </label>
       <Select disabled={disabled} value={value} onValueChange={onValueChange}>
         <SelectTrigger
           className={cn(
-            'body2 h-14 w-full rounded-[4px] border-[var(--border-default)] bg-white px-4 text-left text-foreground shadow-none',
-            'disabled:bg-white disabled:text-muted-foreground disabled:opacity-100',
+            'body3 !h-[56px] w-full rounded-[4px] border-[var(--color-gray-500)] bg-[var(--color-gray-100)] px-4 text-left font-normal text-foreground shadow-none',
+            'data-[placeholder]:text-foreground',
+            'disabled:bg-[var(--color-gray-100)] disabled:text-muted-foreground disabled:opacity-100',
           )}
           aria-label={label}
         >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        <SelectContent className="rounded-[4px] border-[var(--border-default)] bg-white">
+        <SelectContent className="rounded-[4px] border-[var(--color-gray-500)] bg-[var(--color-gray-100)]">
           {options.map((option) => (
             <SelectItem key={option.value} value={option.value}>
               {option.label}
@@ -52,6 +55,6 @@ export function FilterSelect({
           ))}
         </SelectContent>
       </Select>
-    </label>
+    </div>
   );
 }

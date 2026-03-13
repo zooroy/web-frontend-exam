@@ -4,7 +4,8 @@ const data = [
     jobTitle: '資深前端工程師',
     educationId: 4,
     salaryId: 3,
-    preview: '招募經驗豐富的前端工程師，共創卓越網頁體驗！',
+    preview:
+      '招募經驗豐富的前端工程師，共創卓越網頁體驗！招募經驗豐富的前端工程師，共創卓越網頁體驗！招募經驗豐富的前端工程師，共創卓越網頁體驗！招募經驗豐富的前端工程師，共創卓越網頁體驗！',
     companyPhoto: [
       'https://picsum.photos/250/150',
       'https://picsum.photos/250/150',

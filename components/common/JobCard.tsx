@@ -1,4 +1,4 @@
-import { BookOpenText, CircleDollarSign } from 'lucide-react';
+import { BookOpenText, CircleDollarSign, UserRound } from 'lucide-react';
 
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -14,7 +14,7 @@ interface JobCardProps {
 
 interface InformationRowProps {
   children: React.ReactNode;
-  icon: typeof BookOpenText;
+  icon: typeof BookOpenText | typeof CircleDollarSign | typeof UserRound;
 }
 
 function InformationRow({ children, icon: Icon }: InformationRowProps) {
@@ -36,25 +36,25 @@ export function JobCard({
   return (
     <Card
       className={cn(
-        'gap-0 rounded-[8px] border border-[var(--border-default)] bg-background py-0 shadow-[var(--shadow-card)] transition-[border-color,box-shadow,transform] duration-200',
-        'sm:hover:-translate-y-0.5 sm:hover:border-primary sm:hover:shadow-[0_10px_24px_rgb(0_0_0_/_0.12)]',
-        selected &&
-          'border-primary shadow-[0_10px_24px_rgb(238_137_39_/_0.18)]',
+        'gap-[10px] rounded-[6px] border border-[var(--color-gray-500)] bg-background px-4 py-4 shadow-none transition-shadow duration-200',
+        'sm:hover:shadow-[0_0_7px_rgba(0,0,0,0.35)]',
+        selected && 'shadow-[0_0_7px_rgba(0,0,0,0.35)]',
       )}
     >
-      <CardContent className="flex flex-col gap-4 px-5 py-5">
+      <CardContent className="flex min-h-[148px] flex-col gap-[10px] px-0 py-0">
         <h3 className="body3 font-bold text-foreground sm:body5">
           {job.companyName}
         </h3>
         <div className="flex flex-col gap-2">
+          <InformationRow icon={UserRound}>{job.jobTitle}</InformationRow>
           <InformationRow icon={BookOpenText}>{educationLabel}</InformationRow>
           <InformationRow icon={CircleDollarSign}>{salaryLabel}</InformationRow>
         </div>
-        <p className="body2 line-clamp-2 min-h-[2.5rem] font-normal text-foreground">
+        <p className="body2 line-clamp-2 min-h-[40px] font-normal text-foreground">
           {job.preview}
         </p>
       </CardContent>
-      <CardFooter className="justify-center border-t border-[var(--border-default)] bg-background px-5 py-4">
+      <CardFooter className="justify-center bg-background px-0 py-0">
         <button
           type="button"
           className="body2 font-bold text-primary transition-colors hover:text-accent"

@@ -17,16 +17,18 @@ export function FilterTextField({
   value,
 }: FilterTextFieldProps) {
   return (
-    <label className="flex w-full min-w-0 flex-col gap-2">
-      <span className="body1 font-bold text-muted-foreground">{label}</span>
+    <label className="relative flex w-full min-w-0">
+      <span className="body1 absolute top-0 left-3 z-10 -translate-y-1/2 bg-[var(--color-gray-100)] px-1 font-normal text-foreground">
+        {label}
+      </span>
       <Input
         disabled={disabled}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
         className={cn(
-          'body2 h-14 rounded-[4px] border-[var(--border-default)] bg-white px-4 text-foreground shadow-none',
-          'placeholder:text-muted-foreground disabled:bg-white disabled:text-muted-foreground disabled:opacity-100',
+          'body3 h-[56px] rounded-[4px] border-[var(--color-gray-500)] bg-[var(--color-gray-100)] px-4 font-normal text-foreground shadow-none',
+          'placeholder:text-foreground disabled:bg-[var(--color-gray-100)] disabled:text-muted-foreground disabled:opacity-100',
         )}
         aria-label={label}
       />

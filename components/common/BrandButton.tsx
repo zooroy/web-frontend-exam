@@ -24,9 +24,9 @@ export function BrandButton({
       type={type}
       disabled={disabled}
       className={cn(
-        'body3 h-14 rounded-[4px] px-5 font-normal text-white shadow-none',
-        'bg-[var(--primary)] hover:bg-[var(--primary)]',
-        'disabled:bg-[var(--color-gray-700)] disabled:text-white disabled:opacity-100',
+        'body3 h-[56px] rounded-[4px] px-[22px] font-normal text-[var(--color-gray-100)] shadow-none',
+        'bg-[var(--color-gray-700)] hover:bg-[var(--color-gray-1000)]',
+        'disabled:bg-[var(--color-gray-700)] disabled:text-[var(--color-gray-100)] disabled:opacity-100',
         className,
       )}
       {...props}
