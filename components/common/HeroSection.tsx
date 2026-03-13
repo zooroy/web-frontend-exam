@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface HeroSectionProps {
   logoSrc: string;
@@ -17,31 +17,38 @@ export function HeroSection({ logoSrc }: HeroSectionProps) {
   const shouldReduceMotion = useReducedMotion();
   const [eyeOffset, setEyeOffset] = useState<EyeOffset>({ x: 0, y: 0 });
 
-  function handlePointerMove(event: React.PointerEvent<HTMLElement>) {
+  useEffect(() => {
     if (shouldReduceMotion) {
-      return;
+      return undefined;
     }
 
-    const bounds = event.currentTarget.getBoundingClientRect();
-    const normalizedX = (event.clientX - bounds.left) / bounds.width - 0.5;
-    const normalizedY = (event.clientY - bounds.top) / bounds.height - 0.5;
+    function handleWindowPointerMove(event: PointerEvent) {
+      const normalizedX = event.clientX / window.innerWidth - 0.5;
+      const normalizedY = event.clientY / window.innerHeight - 0.5;
 
-    setEyeOffset({
-      x: normalizedX * 10,
-      y: normalizedY * 6,
-    });
-  }
+      setEyeOffset({
+        x: normalizedX * 10,
+        y: normalizedY * 6,
+      });
+    }
 
-  function handlePointerLeave() {
-    setEyeOffset({ x: 0, y: 0 });
-  }
+    function resetEyeOffset() {
+      setEyeOffset({ x: 0, y: 0 });
+    }
+
+    window.addEventListener('pointermove', handleWindowPointerMove);
+    window.addEventListener('pointerleave', resetEyeOffset);
+    window.addEventListener('blur', resetEyeOffset);
+
+    return function cleanup() {
+      window.removeEventListener('pointermove', handleWindowPointerMove);
+      window.removeEventListener('pointerleave', resetEyeOffset);
+      window.removeEventListener('blur', resetEyeOffset);
+    };
+  }, [shouldReduceMotion]);
 
   return (
-    <section
-      className="relative overflow-hidden bg-[linear-gradient(180deg,var(--color-gray-700)_0%,var(--color-gray-1000)_100%)]"
-      onPointerMove={handlePointerMove}
-      onPointerLeave={handlePointerLeave}
-    >
+    <section className="relative overflow-hidden bg-[linear-gradient(180deg,var(--color-gray-700)_0%,var(--color-gray-1000)_100%)]">
       <div className="mx-auto flex min-h-[260px] max-w-[1440px] items-end px-3 pt-4 sm:min-h-[823px] sm:px-0 sm:pt-0">
         <div className="relative h-[220px] w-full sm:h-[823px]">
           <Image

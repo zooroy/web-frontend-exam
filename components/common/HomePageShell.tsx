@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { startTransition, useMemo, useState } from 'react';
 
 import { BrandButton } from '@/components/common/BrandButton';
@@ -27,8 +28,45 @@ interface FiltersState {
   salaryLevel?: number;
 }
 
+type PaginationItem = number | 'ellipsis';
+
 function buildLabelMap(items: Array<EducationItem | SalaryItem>) {
   return new Map(items.map((item) => [item.id, item.label]));
+}
+
+function buildPaginationItems(
+  currentPage: number,
+  totalPages: number,
+): PaginationItem[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  if (currentPage <= 4) {
+    return [1, 2, 3, 4, 5, 'ellipsis', totalPages];
+  }
+
+  if (currentPage >= totalPages - 3) {
+    return [
+      1,
+      'ellipsis',
+      totalPages - 4,
+      totalPages - 3,
+      totalPages - 2,
+      totalPages - 1,
+      totalPages,
+    ];
+  }
+
+  return [
+    1,
+    'ellipsis',
+    currentPage - 1,
+    currentPage,
+    currentPage + 1,
+    'ellipsis',
+    totalPages,
+  ];
 }
 
 export function HomePageShell({
@@ -47,6 +85,12 @@ export function HomePageShell({
   const [selectedEducation, setSelectedEducation] = useState<string>('');
   const [selectedSalary, setSelectedSalary] = useState<string>('');
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
+  const shouldUseInitialJobs =
+    page === 1 &&
+    !filters.companyName &&
+    typeof filters.educationLevel === 'undefined' &&
+    typeof filters.salaryLevel === 'undefined' &&
+    initialJobs.data.length === perPage;
 
   const jobsQuery = useQuery({
     ...jobQueries.list({
@@ -56,7 +100,8 @@ export function HomePageShell({
       perPage,
       salaryLevel: filters.salaryLevel,
     }),
-    initialData: initialJobs,
+    initialData: shouldUseInitialJobs ? initialJobs : undefined,
+    placeholderData: (previousData) => previousData,
   });
 
   const educationLevelsQuery = useQuery({
@@ -99,6 +144,10 @@ export function HomePageShell({
   }
 
   function handlePageChange(nextPage: number) {
+    if (nextPage < 1 || nextPage > totalPages || nextPage === page) {
+      return;
+    }
+
     startTransition(() => {
       setPage(nextPage);
     });
@@ -114,8 +163,12 @@ export function HomePageShell({
     value: String(item.id),
     label: item.label,
   }));
-  const totalPages = Math.max(1, Math.ceil(jobsQuery.data.total / perPage));
-  const pageNumbers = Array.from(
+  const totalPages = Math.max(
+    1,
+    Math.ceil((jobsQuery.data?.total ?? 0) / perPage),
+  );
+  const condensedPaginationItems = buildPaginationItems(page, totalPages);
+  const fullPaginationItems = Array.from(
     { length: totalPages },
     (_, index) => index + 1,
   );
@@ -124,8 +177,8 @@ export function HomePageShell({
     <div className="min-h-screen bg-[var(--color-gray-300)]">
       <HeroSection logoSrc="/hero-section/Logo-01.png" />
       <main className="relative z-10 mx-auto max-w-[1440px] px-3 pb-10 sm:-mt-[124px] sm:px-7 sm:pb-16">
-        <section className="rounded-[12px] border border-[var(--border-default)] bg-background px-4 py-4 shadow-[2px_2px_3.5px_rgba(0,0,0,0.25)] sm:min-h-[678px] sm:px-6 sm:py-6">
-          <div className="flex flex-col gap-5 sm:gap-6">
+        <section className="flex flex-col rounded-[12px] border border-[var(--border-default)] bg-background px-4 py-4 shadow-[2px_2px_3.5px_rgba(0,0,0,0.25)] sm:min-h-[678px] sm:px-6 sm:py-6">
+          <div className="flex flex-1 flex-col gap-5 sm:gap-6">
             <header>
               <div className="flex items-center gap-3">
                 <span className="h-4 w-1 rounded-[4px] bg-primary" />
@@ -170,7 +223,7 @@ export function HomePageShell({
                   : 'grid grid-cols-1 gap-4'
               }
             >
-              {jobsQuery.data.data.map((job) => (
+              {jobsQuery.data?.data.map((job) => (
                 <JobCard
                   key={job.id}
                   job={job}
@@ -184,28 +237,104 @@ export function HomePageShell({
               ))}
             </div>
             {totalPages > 1 ? (
-              <nav
-                aria-label="工作列表分頁"
-                className="flex items-center justify-center gap-1.5 pt-1"
-              >
-                {pageNumbers.map((pageNumber) => (
+              <nav aria-label="工作列表分頁" className="mt-auto pt-1">
+                <div className="hidden items-center justify-center gap-[18px] sm:flex">
                   <button
-                    key={pageNumber}
                     type="button"
-                    aria-current={page === pageNumber ? 'page' : undefined}
-                    className={cn(
-                      'body2 flex h-8 min-w-8 items-center justify-center rounded-[4px] px-2 font-normal transition-colors',
-                      page === pageNumber
-                        ? 'bg-primary text-[var(--color-gray-100)]'
-                        : 'text-muted-foreground hover:bg-[var(--color-gray-300)] hover:text-foreground',
-                    )}
+                    aria-label="上一頁"
+                    disabled={page === 1}
+                    className="flex h-8 w-8 items-center justify-center text-[var(--color-gray-700)] transition-colors hover:text-foreground disabled:text-[var(--color-gray-500)]"
                     onClick={() => {
-                      handlePageChange(pageNumber);
+                      handlePageChange(page - 1);
                     }}
                   >
-                    {pageNumber}
+                    <ChevronLeft className="size-5" />
                   </button>
-                ))}
+                  {fullPaginationItems.map((pageNumber) => (
+                    <button
+                      key={pageNumber}
+                      type="button"
+                      aria-current={page === pageNumber ? 'page' : undefined}
+                      className={cn(
+                        'body2 flex h-8 min-w-8 items-center justify-center rounded-full px-2 font-normal transition-colors',
+                        page === pageNumber
+                          ? 'bg-[var(--color-gray-300)] text-foreground'
+                          : 'text-foreground hover:text-[var(--color-gray-700)]',
+                      )}
+                      onClick={() => {
+                        handlePageChange(pageNumber);
+                      }}
+                    >
+                      {pageNumber}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    aria-label="下一頁"
+                    disabled={page === totalPages}
+                    className="flex h-8 w-8 items-center justify-center text-[var(--color-gray-700)] transition-colors hover:text-foreground disabled:text-[var(--color-gray-500)]"
+                    onClick={() => {
+                      handlePageChange(page + 1);
+                    }}
+                  >
+                    <ChevronRight className="size-5" />
+                  </button>
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 sm:hidden">
+                  <button
+                    type="button"
+                    aria-label="上一頁"
+                    disabled={page === 1}
+                    className="flex h-8 w-8 items-center justify-center text-[var(--color-gray-700)] transition-colors hover:text-foreground disabled:text-[var(--color-gray-500)]"
+                    onClick={() => {
+                      handlePageChange(page - 1);
+                    }}
+                  >
+                    <ChevronLeft className="size-5" />
+                  </button>
+                  {condensedPaginationItems.map((item, index) => {
+                    if (item === 'ellipsis') {
+                      return (
+                        <span
+                          key={`pagination-slot-${index + 1}`}
+                          className="body2 flex h-8 min-w-6 items-center justify-center text-foreground"
+                        >
+                          ...
+                        </span>
+                      );
+                    }
+
+                    return (
+                      <button
+                        key={`pagination-slot-${index + 1}`}
+                        type="button"
+                        aria-current={page === item ? 'page' : undefined}
+                        className={cn(
+                          'body2 flex h-8 min-w-8 items-center justify-center rounded-full px-2 font-normal transition-colors',
+                          page === item
+                            ? 'bg-[var(--color-gray-300)] text-foreground'
+                            : 'text-foreground hover:text-[var(--color-gray-700)]',
+                        )}
+                        onClick={() => {
+                          handlePageChange(item);
+                        }}
+                      >
+                        {item}
+                      </button>
+                    );
+                  })}
+                  <button
+                    type="button"
+                    aria-label="下一頁"
+                    disabled={page === totalPages}
+                    className="flex h-8 w-8 items-center justify-center text-[var(--color-gray-700)] transition-colors hover:text-foreground disabled:text-[var(--color-gray-500)]"
+                    onClick={() => {
+                      handlePageChange(page + 1);
+                    }}
+                  >
+                    <ChevronRight className="size-5" />
+                  </button>
+                </div>
               </nav>
             ) : null}
           </div>

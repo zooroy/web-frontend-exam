@@ -1,6 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -83,51 +83,57 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: default;
+  }
 }
 
-@layer utilities {
-  .body1 {
-    font-size: 12px;
-    line-height: 1.25;
-  }
+@utility body1 {
+  font-size: 12px;
+  line-height: 1.25;
+}
 
-  .body2 {
-    font-size: 14px;
-    line-height: 1.25;
-  }
+@utility body2 {
+  font-size: 14px;
+  line-height: 1.25;
+}
 
-  .body3 {
-    font-size: 16px;
-    line-height: 1.25;
-  }
+@utility body3 {
+  font-size: 16px;
+  line-height: 1.25;
+}
 
-  .body4 {
-    font-size: 20px;
-    line-height: 1.25;
-  }
+@utility body4 {
+  font-size: 20px;
+  line-height: 1.25;
+}
 
-  .body5 {
-    font-size: 24px;
-    line-height: 1.25;
-  }
+@utility body5 {
+  font-size: 24px;
+  line-height: 1.25;
+}
 
-  .body6 {
-    font-size: 28px;
-    line-height: 1.25;
-  }
+@utility body6 {
+  font-size: 28px;
+  line-height: 1.25;
+}
 
-  .body7 {
-    font-size: 34px;
-    line-height: 1.25;
-  }
+@utility body7 {
+  font-size: 34px;
+  line-height: 1.25;
+}
 
-  .body8 {
-    font-size: 40px;
-    line-height: 1.25;
-  }
+@utility body8 {
+  font-size: 40px;
+  line-height: 1.25;
+}
 
-  .body9 {
-    font-size: 48px;
-    line-height: 1.25;
-  }
+@utility body9 {
+  font-size: 48px;
+  line-height: 1.25;
 }
