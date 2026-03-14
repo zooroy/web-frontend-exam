@@ -54,7 +54,9 @@
   --muted-foreground: var(--color-gray-700);
 
   --shadow-card: 0 2px 8px rgb(0 0 0 / 0.08);
-  --shadow-modal: 0 8px 32px rgb(0 0 0 / 0.18);
+  --shadow-modal:
+    0 11px 13.125px -7px rgb(0 0 0 / 0.2), 0 24px 33.25px 3px rgb(0 0 0 / 0.14),
+    0 9px 40.25px 8px rgb(0 0 0 / 0.12);
 
   /* shadcn compatibility tokens */
   --card: var(--background);

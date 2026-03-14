@@ -1,5 +1,6 @@
 'use client';
 
+import parse from 'html-react-parser';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 
 import { DetailCarousel } from '@/components/common/DetailCarousel';
@@ -7,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogClose,
-  DialogFooter,
   DialogHeader,
   DialogOverlay,
   DialogPortal,
@@ -33,36 +33,47 @@ export function DetailDialog({ job, onClose, open }: DetailDialogProps) {
       }}
     >
       <DialogPortal>
-        <DialogOverlay className="bg-overlay backdrop-blur-none" />
+        <DialogOverlay className="!bg-overlay backdrop-blur-none supports-backdrop-filter:backdrop-blur-none" />
         <DialogPrimitive.Content
           className={cn(
-            'fixed top-1/2 left-1/2 z-50 flex w-[min(750px,calc(100vw-44px))] max-w-none -translate-x-1/2 -translate-y-1/2 flex-col gap-6 rounded-[12px] border border-[var(--border-default)] bg-background px-5 py-6 shadow-[var(--shadow-modal)] outline-none sm:px-8',
+            'fixed top-1/2 left-1/2 z-50 flex w-[min(750px,calc(100vw-44px))] max-w-none -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-[4px] bg-background shadow-[var(--shadow-modal)] outline-none',
             'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
           )}
         >
-          <DialogHeader className="gap-2">
-            <DialogTitle className="body3 font-bold text-foreground sm:body5">
-              {job?.jobTitle ?? '工作詳細資訊'}
+          <DialogHeader className="flex justify-center border-b border-[var(--border-default)] px-4 h-[57px] sm:px-6 sm:h-[62px]">
+            <DialogTitle className="!body4 font-bold text-foreground sm:!body5">
+              詳細資訊
             </DialogTitle>
           </DialogHeader>
-          <div className="flex min-h-[420px] flex-col gap-6 sm:min-h-[460px]">
-            <DetailCarousel images={job?.companyPhoto ?? []} />
-            <div
-              className="body2 max-h-[42vh] overflow-y-auto font-normal leading-7 text-foreground [&_a]:font-bold [&_a]:text-primary [&_a]:underline [&_h1]:body4 [&_h1]:font-bold [&_h2]:body3 [&_h2]:mt-5 [&_h2]:font-bold [&_li]:ml-5 [&_li]:list-disc [&_p]:mt-4"
-              dangerouslySetInnerHTML={{ __html: job?.description ?? '' }}
+          <div className="flex max-h-[min(768px,calc(100vh-120px))] flex-col gap-3 overflow-y-auto px-4 py-4 sm:gap-[18px] sm:px-6 sm:py-5">
+            <div className="flex flex-col body4 font-bold text-foreground sm:body5">
+              {job?.companyName ?? '未提供公司名稱'}
+            </div>
+            <DetailCarousel
+              images={job?.companyPhoto ?? []}
+              desktopSlidesPerView={3}
+              mobileSlidesPerView={1}
             />
+            <div className="flex flex-col gap-2 sm:gap-2">
+              <h3 className="body3 font-bold text-foreground sm:body4">
+                工作內容
+              </h3>
+              <div className="body3 font-normal leading-[1.25] text-muted-foreground [&_a]:font-bold [&_a]:text-primary [&_a]:underline [&_h1]:body4 [&_h1]:font-bold [&_h2]:body3 [&_h2]:mt-5 [&_h2]:font-bold [&_li]:ml-5 [&_li]:list-disc [&_p]:mt-4">
+                {parse(job?.description ?? '')}
+              </div>
+            </div>
           </div>
-          <DialogFooter className="-mx-5 -mb-6 border-[var(--border-default)] bg-background px-5 py-4 sm:-mx-8 sm:px-8">
+          <div className="flex h-[50px] items-center justify-end gap-2 border-t border-[var(--border-default)] bg-background px-2 py-2 sm:h-[52px]">
             <DialogClose asChild>
               <Button
                 type="button"
-                variant="outline"
-                className="body2 rounded-[4px] border-[var(--border-default)]"
+                variant="ghost"
+                className="body2 rounded-[4px] h-7 font-normal text-foreground sm:h-9"
               >
                 關閉
               </Button>
             </DialogClose>
-          </DialogFooter>
+          </div>
         </DialogPrimitive.Content>
       </DialogPortal>
     </Dialog>

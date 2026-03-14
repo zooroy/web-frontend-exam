@@ -1,10 +1,14 @@
 'use client';
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { Button } from '@/components/ui/button';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from '@/components/ui/carousel';
 import { cn } from '@/lib/utils';
 
 interface DetailCarouselProps {
@@ -15,20 +19,30 @@ interface DetailCarouselProps {
 
 type ResponsiveMode = 'desktop' | 'mobile';
 
-function getGridClass(slidesPerView: number) {
-  if (slidesPerView <= 1) {
-    return 'grid-cols-1';
+const AUTO_PLAY_DELAY = 4000;
+
+function getSlideClass(mode: ResponsiveMode, slidesPerView: number) {
+  if (mode === 'mobile') {
+    return 'basis-full';
+  }
+
+  if (slidesPerView === 1) {
+    return 'sm:basis-full';
   }
 
   if (slidesPerView === 2) {
-    return 'grid-cols-2';
+    return 'sm:basis-[calc((100%-8px)/2)]';
   }
 
   if (slidesPerView === 3) {
-    return 'grid-cols-3';
+    return 'sm:basis-[calc((100%-16px)/3)]';
   }
 
-  return 'grid-cols-4';
+  return 'sm:basis-[calc((100%-24px)/4)]';
+}
+
+function getPageCount(imageCount: number, slidesPerView: number) {
+  return Math.max(imageCount - slidesPerView + 1, 1);
 }
 
 export function DetailCarousel({
@@ -36,8 +50,11 @@ export function DetailCarousel({
   images,
   mobileSlidesPerView = 1,
 }: DetailCarouselProps) {
+  const [api, setApi] = useState<CarouselApi>();
   const [mode, setMode] = useState<ResponsiveMode>('mobile');
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [activePage, setActivePage] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isInteracting, setIsInteracting] = useState(false);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(min-width: 640px)');
@@ -49,104 +66,158 @@ export function DetailCarousel({
     handleChange();
     mediaQuery.addEventListener('change', handleChange);
 
-    return () => {
+    return function cleanup() {
       mediaQuery.removeEventListener('change', handleChange);
     };
   }, []);
 
   const slidesPerView =
     mode === 'desktop' ? desktopSlidesPerView : mobileSlidesPerView;
-  const safeSlidesPerView = Math.max(1, slidesPerView);
-  const maxIndex = Math.max(images.length - safeSlidesPerView, 0);
-  const safeCurrentIndex = Math.min(currentIndex, maxIndex);
-  const visibleImages = images.slice(
-    safeCurrentIndex,
-    safeCurrentIndex + safeSlidesPerView,
-  );
-  const dotIndexes = useMemo(
-    () => Array.from({ length: maxIndex + 1 }, (_, index) => index),
-    [maxIndex],
-  );
+  const pageCount = getPageCount(images.length, slidesPerView);
+  const dotIndexes = Array.from({ length: pageCount }, (_, index) => index);
 
-  function handlePrevious() {
-    setCurrentIndex((previousIndex) => Math.max(previousIndex - 1, 0));
-  }
-
-  function handleNext() {
-    setCurrentIndex((previousIndex) => Math.min(previousIndex + 1, maxIndex));
-  }
-
-  function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    if (event.key === 'ArrowLeft') {
-      event.preventDefault();
-      handlePrevious();
+  useEffect(() => {
+    if (!api) {
+      return undefined;
     }
 
-    if (event.key === 'ArrowRight') {
-      event.preventDefault();
-      handleNext();
+    const currentApi = api;
+
+    function handleSelect() {
+      setActivePage(currentApi.selectedScrollSnap());
     }
-  }
+
+    handleSelect();
+    currentApi.on('select', handleSelect);
+    currentApi.on('reInit', handleSelect);
+
+    return function cleanup() {
+      currentApi.off('select', handleSelect);
+      currentApi.off('reInit', handleSelect);
+    };
+  }, [api]);
+
+  useEffect(() => {
+    if (!api) {
+      return undefined;
+    }
+
+    const nextPage = Math.min(api.selectedScrollSnap(), pageCount - 1);
+
+    api.reInit({
+      align: 'start',
+      containScroll: 'trimSnaps',
+      dragFree: false,
+      loop: false,
+      skipSnaps: false,
+    });
+    api.scrollTo(nextPage, true);
+
+    return undefined;
+  }, [api, pageCount, slidesPerView]);
+
+  useEffect(() => {
+    if (!api || pageCount <= 1 || isHovered || isInteracting) {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      const nextIndex = activePage >= pageCount - 1 ? 0 : activePage + 1;
+
+      api.scrollTo(nextIndex);
+    }, AUTO_PLAY_DELAY);
+
+    return function cleanup() {
+      window.clearInterval(intervalId);
+    };
+  }, [activePage, api, isHovered, isInteracting, pageCount]);
+
+  useEffect(() => {
+    if (!api) {
+      return undefined;
+    }
+
+    const currentApi = api;
+
+    function handlePointerDown() {
+      setIsInteracting(true);
+    }
+
+    function handleSettle() {
+      setIsInteracting(false);
+    }
+
+    currentApi.on('pointerDown', handlePointerDown);
+    currentApi.on('settle', handleSettle);
+
+    return function cleanup() {
+      currentApi.off('pointerDown', handlePointerDown);
+      currentApi.off('settle', handleSettle);
+    };
+  }, [api]);
 
   return (
-    <div className="flex flex-col gap-4" onKeyDown={handleKeyDown}>
-      <div className="flex items-center gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="shrink-0 rounded-full border-[var(--border-default)] bg-background"
-          onClick={handlePrevious}
-          disabled={safeCurrentIndex === 0}
-          aria-label="上一張圖片"
-        >
-          <ChevronLeft />
-        </Button>
-        <div
-          className={cn('grid flex-1 gap-3', getGridClass(safeSlidesPerView))}
-        >
-          {visibleImages.map((image, index) => (
-            <div
-              key={`${image}-${safeCurrentIndex + index + 1}`}
-              className="overflow-hidden rounded-[8px] bg-[var(--color-gray-300)]"
+    <div
+      className="flex flex-col gap-[10px]"
+      onMouseEnter={() => {
+        setIsHovered(true);
+      }}
+      onMouseLeave={() => {
+        setIsHovered(false);
+      }}
+    >
+      <Carousel
+        className="w-full cursor-grab active:cursor-grabbing"
+        opts={{
+          align: 'start',
+          containScroll: 'trimSnaps',
+          dragFree: false,
+          loop: false,
+          skipSnaps: false,
+        }}
+        setApi={setApi}
+      >
+        <CarouselContent className="-ml-2">
+          {images.map((image, index) => (
+            <CarouselItem
+              key={`${image}-${index + 1}`}
+              className={cn('pl-2', getSlideClass(mode, slidesPerView))}
             >
-              <Image
-                src={image}
-                alt={`工作圖片 ${safeCurrentIndex + index + 1}`}
-                width={640}
-                height={384}
-                className="h-auto w-full object-cover"
-                unoptimized
-              />
-            </div>
+              <div
+                className={cn(
+                  'overflow-hidden bg-[var(--color-gray-300)]',
+                  mode === 'desktop' ? 'h-[150px]' : 'aspect-[250/150]',
+                )}
+              >
+                <Image
+                  alt={`工作圖片 ${index + 1}`}
+                  className="h-full w-full object-cover"
+                  draggable={false}
+                  height={150}
+                  src={image}
+                  unoptimized
+                  width={250}
+                />
+              </div>
+            </CarouselItem>
           ))}
-        </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="shrink-0 rounded-full border-[var(--border-default)] bg-background"
-          onClick={handleNext}
-          disabled={safeCurrentIndex === maxIndex}
-          aria-label="下一張圖片"
-        >
-          <ChevronRight />
-        </Button>
-      </div>
+        </CarouselContent>
+      </Carousel>
       <div className="flex justify-center gap-2">
         {dotIndexes.map((dotIndex) => (
           <button
             key={dotIndex}
-            type="button"
-            className={cn(
-              'size-2 rounded-full bg-[var(--color-gray-500)] transition-colors',
-              dotIndex === safeCurrentIndex && 'bg-primary',
-            )}
-            onClick={() => {
-              setCurrentIndex(dotIndex);
-            }}
             aria-label={`前往第 ${dotIndex + 1} 組圖片`}
-            aria-pressed={dotIndex === safeCurrentIndex}
+            aria-pressed={dotIndex === activePage}
+            className={cn(
+              'rounded-full bg-[var(--color-gray-500)] transition-all duration-200',
+              dotIndex === activePage ? 'h-[6px] w-6 bg-primary' : 'size-[6px]',
+            )}
+            type="button"
+            onClick={() => {
+              setIsInteracting(true);
+              api?.scrollTo(dotIndex);
+            }}
           />
         ))}
       </div>
