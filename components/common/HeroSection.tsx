@@ -49,8 +49,9 @@ export function HeroSection({ logoSrc }: HeroSectionProps) {
 
   return (
     <section className="relative overflow-hidden bg-[linear-gradient(180deg,var(--color-gray-700)_0%,var(--color-gray-1000)_100%)]">
-      <div className="mx-auto flex min-h-[260px] max-w-[1440px] items-end px-3 pt-4 sm:min-h-[823px] sm:px-0 sm:pt-0">
-        <div className="relative h-[220px] w-full sm:h-[823px]">
+      <div className="mx-auto flex max-w-[1440px] items-end px-0 pt-0">
+        <div className="relative aspect-[375/238] w-full sm:aspect-[1440/823]">
+          {/* 背景 */}
           <Image
             src="/hero-section/Background-01.png"
             alt="Hero background"
@@ -59,17 +60,19 @@ export function HeroSection({ logoSrc }: HeroSectionProps) {
             className="object-cover"
             sizes="100vw"
           />
-          <div className="absolute inset-y-0 left-0 w-[76.18%]">
+          {/* 人物 */}
+          <div className="absolute inset-y-0 left-0 w-full">
             <div className="relative h-full w-full">
               <Image
                 src="/hero-section/Character-01-White.png"
                 alt="Hero portrait highlight"
                 fill
                 priority
-                className="object-contain object-left-top"
+                className="object-left-bottom object-contain"
                 sizes="(min-width: 640px) 1097px, 100vw"
               />
-              <div className="absolute top-[37.4%] left-[52.96%] hidden sm:block">
+              {/* left eye */}
+              <div className="absolute top-[37%] left-[43.8%] w-[3.7%] sm:left-[39%]">
                 <motion.div
                   animate={
                     shouldReduceMotion
@@ -77,17 +80,19 @@ export function HeroSection({ logoSrc }: HeroSectionProps) {
                       : { x: eyeOffset.x, y: eyeOffset.y }
                   }
                   transition={{ duration: 0.18, ease: 'easeOut' }}
+                  className="w-full"
                 >
                   <Image
                     src="/hero-section/LeftEye-01.png"
                     alt=""
                     width={41}
                     height={33}
-                    className="h-[33px] w-[41px]"
+                    className="h-auto w-full"
                   />
                 </motion.div>
               </div>
-              <div className="absolute top-[36.7%] left-[66.45%] hidden sm:block">
+              {/* right eye */}
+              <div className="absolute top-[36.4%] left-[56.1%] w-[3.3%] sm:left-[50.6%]">
                 <motion.div
                   animate={
                     shouldReduceMotion
@@ -95,13 +100,14 @@ export function HeroSection({ logoSrc }: HeroSectionProps) {
                       : { x: eyeOffset.x, y: eyeOffset.y }
                   }
                   transition={{ duration: 0.18, ease: 'easeOut' }}
+                  className="w-full"
                 >
                   <Image
                     src="/hero-section/RightEye-01.png"
                     alt=""
                     width={37}
                     height={30}
-                    className="h-[30px] w-[37px]"
+                    className="h-auto w-full"
                   />
                 </motion.div>
               </div>
@@ -110,11 +116,12 @@ export function HeroSection({ logoSrc }: HeroSectionProps) {
                 alt="Hero portrait"
                 fill
                 priority
-                className="object-contain object-left-top"
+                className="object-left-bottom object-contain"
                 sizes="(min-width: 640px) 1097px, 100vw"
               />
             </div>
           </div>
+          {/* logo */}
           <motion.div
             animate={shouldReduceMotion ? undefined : { scale: [1, 1.05, 1] }}
             transition={
@@ -126,7 +133,7 @@ export function HeroSection({ logoSrc }: HeroSectionProps) {
                     repeat: Number.POSITIVE_INFINITY,
                   }
             }
-            className="absolute right-[4%] bottom-[13%] w-[42%] max-w-[240px] sm:right-[3.4%] sm:bottom-[16.4%] sm:w-[37.5%] sm:max-w-[540px]"
+            className="absolute right-[3%] bottom-[10%] w-[37.5%] min-w-[137px] max-w-[200px] sm:right-[5.8%] sm:bottom-[16.4%] sm:max-w-[540px]"
           >
             <Image
               src={logoSrc}
