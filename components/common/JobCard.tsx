@@ -41,7 +41,7 @@ export function JobCard({
   return (
     <Card
       className={cn(
-        '!ring-0 gap-[10px] rounded-[6px] border border-[var(--color-gray-500)] bg-background px-4 !py-4 shadow-none transition-shadow duration-200',
+        '!ring-0 gap-[10px] rounded-[6px] border border-[var(--color-gray-500)] bg-background px-4 !py-4 shadow-none transition-shadow duration-200 min-h-[220px] max-h-[220px]',
         'sm:hover:shadow-[0_0_7px_rgba(0,0,0,0.35)]',
         selected && 'shadow-[0_0_7px_rgba(0,0,0,0.35)]',
       )}
