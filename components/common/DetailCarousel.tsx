@@ -11,70 +11,29 @@ import {
 } from '@/components/ui/carousel';
 import { cn } from '@/lib/utils';
 
+import type { SyntheticEvent } from 'react';
+
 interface DetailCarouselProps {
-  desktopSlidesPerView?: number;
   images: string[];
-  mobileSlidesPerView?: number;
 }
 
-type ResponsiveMode = 'desktop' | 'mobile';
+interface ImageDimensions {
+  height: number;
+  width: number;
+}
 
 const AUTO_PLAY_DELAY = 4000;
 
-function getSlideClass(mode: ResponsiveMode, slidesPerView: number) {
-  if (mode === 'mobile') {
-    return 'basis-full';
-  }
-
-  if (slidesPerView === 1) {
-    return 'sm:basis-full';
-  }
-
-  if (slidesPerView === 2) {
-    return 'sm:basis-[calc((100%-8px)/2)]';
-  }
-
-  if (slidesPerView === 3) {
-    return 'sm:basis-[calc((100%-16px)/3)]';
-  }
-
-  return 'sm:basis-[calc((100%-24px)/4)]';
-}
-
-function getPageCount(imageCount: number, slidesPerView: number) {
-  return Math.max(imageCount - slidesPerView + 1, 1);
-}
-
-export function DetailCarousel({
-  desktopSlidesPerView = 3,
-  images,
-  mobileSlidesPerView = 1,
-}: DetailCarouselProps) {
+export function DetailCarousel({ images }: DetailCarouselProps) {
   const [api, setApi] = useState<CarouselApi>();
-  const [mode, setMode] = useState<ResponsiveMode>('mobile');
   const [activePage, setActivePage] = useState(0);
+  const [imageDimensions, setImageDimensions] = useState<
+    Record<string, ImageDimensions>
+  >({});
   const [isHovered, setIsHovered] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(min-width: 640px)');
-
-    function handleChange() {
-      setMode(mediaQuery.matches ? 'desktop' : 'mobile');
-    }
-
-    handleChange();
-    mediaQuery.addEventListener('change', handleChange);
-
-    return function cleanup() {
-      mediaQuery.removeEventListener('change', handleChange);
-    };
-  }, []);
-
-  const slidesPerView =
-    mode === 'desktop' ? desktopSlidesPerView : mobileSlidesPerView;
-  const pageCount = getPageCount(images.length, slidesPerView);
-  const dotIndexes = Array.from({ length: pageCount }, (_, index) => index);
+  const [snapCount, setSnapCount] = useState(1);
+  const dotIndexes = Array.from({ length: snapCount }, (_, index) => index);
 
   useEffect(() => {
     if (!api) {
@@ -85,6 +44,7 @@ export function DetailCarousel({
 
     function handleSelect() {
       setActivePage(currentApi.selectedScrollSnap());
+      setSnapCount(currentApi.scrollSnapList().length);
     }
 
     handleSelect();
@@ -102,35 +62,30 @@ export function DetailCarousel({
       return undefined;
     }
 
-    const nextPage = Math.min(api.selectedScrollSnap(), pageCount - 1);
-
     api.reInit({
       align: 'start',
       containScroll: 'trimSnaps',
       dragFree: false,
-      loop: false,
+      loop: true,
       skipSnaps: false,
     });
-    api.scrollTo(nextPage, true);
 
     return undefined;
-  }, [api, pageCount, slidesPerView]);
+  }, [api, imageDimensions, images.length]);
 
   useEffect(() => {
-    if (!api || pageCount <= 1 || isHovered || isInteracting) {
+    if (!api || snapCount <= 1 || isHovered || isInteracting) {
       return undefined;
     }
 
     const intervalId = window.setInterval(() => {
-      const nextIndex = activePage >= pageCount - 1 ? 0 : activePage + 1;
-
-      api.scrollTo(nextIndex);
+      api.scrollNext();
     }, AUTO_PLAY_DELAY);
 
     return function cleanup() {
       window.clearInterval(intervalId);
     };
-  }, [activePage, api, isHovered, isInteracting, pageCount]);
+  }, [api, isHovered, isInteracting, snapCount]);
 
   useEffect(() => {
     if (!api) {
@@ -156,6 +111,33 @@ export function DetailCarousel({
     };
   }, [api]);
 
+  function handleImageLoad(
+    imageKey: string,
+    event: SyntheticEvent<HTMLImageElement>,
+  ) {
+    const target = event.currentTarget;
+    const nextDimensions = {
+      height: target.naturalHeight,
+      width: target.naturalWidth,
+    };
+
+    setImageDimensions((previousDimensions) => {
+      const currentDimensions = previousDimensions[imageKey];
+
+      if (
+        currentDimensions?.width === nextDimensions.width &&
+        currentDimensions?.height === nextDimensions.height
+      ) {
+        return previousDimensions;
+      }
+
+      return {
+        ...previousDimensions,
+        [imageKey]: nextDimensions,
+      };
+    });
+  }
+
   return (
     <div
       className="flex flex-col gap-[10px]"
@@ -172,7 +154,7 @@ export function DetailCarousel({
           align: 'start',
           containScroll: 'trimSnaps',
           dragFree: false,
-          loop: false,
+          loop: true,
           skipSnaps: false,
         }}
         setApi={setApi}
@@ -181,22 +163,20 @@ export function DetailCarousel({
           {images.map((image, index) => (
             <CarouselItem
               key={`${image}-${index + 1}`}
-              className={cn('pl-2', getSlideClass(mode, slidesPerView))}
+              className="basis-auto pl-2"
             >
-              <div
-                className={cn(
-                  'overflow-hidden bg-[var(--color-gray-300)]',
-                  mode === 'desktop' ? 'h-[150px]' : 'aspect-[250/150]',
-                )}
-              >
+              <div className="overflow-hidden bg-[var(--color-gray-300)]">
                 <Image
                   alt={`工作圖片 ${index + 1}`}
-                  className="h-full w-full object-cover"
+                  className="h-auto w-auto max-w-none"
                   draggable={false}
-                  height={150}
+                  height={imageDimensions[image]?.height ?? 150}
                   src={image}
                   unoptimized
-                  width={250}
+                  width={imageDimensions[image]?.width ?? 250}
+                  onLoad={(event) => {
+                    handleImageLoad(image, event);
+                  }}
                 />
               </div>
             </CarouselItem>

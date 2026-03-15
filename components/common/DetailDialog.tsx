@@ -49,11 +49,7 @@ export function DetailDialog({ job, onClose, open }: DetailDialogProps) {
             <div className="flex flex-col body4 font-bold text-foreground sm:body5">
               {job?.companyName ?? '未提供公司名稱'}
             </div>
-            <DetailCarousel
-              images={job?.companyPhoto ?? []}
-              desktopSlidesPerView={3}
-              mobileSlidesPerView={1}
-            />
+            <DetailCarousel images={job?.companyPhoto ?? []} />
             <div className="flex flex-col gap-2 sm:gap-2">
               <h3 className="body3 font-bold text-foreground sm:body4">
                 工作內容
