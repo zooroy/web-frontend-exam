@@ -1,4 +1,4 @@
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 
 import { HomePageShell } from '@/components/common/HomePageShell';
 import {
@@ -13,10 +13,15 @@ interface HomePageProps {
 }
 
 export default async function Home({ searchParams }: HomePageProps) {
+  const cookieStore = await cookies();
   const requestHeaders = await headers();
   const resolvedSearchParams = await searchParams;
   const userAgentValue = requestHeaders.get('user-agent') ?? '';
+  const modeCookie = cookieStore.get('viewport-mode')?.value;
   const { mode, searchState } = getHomePageRequestModel(
+    modeCookie === 'desktop' || modeCookie === 'mobile'
+      ? modeCookie
+      : undefined,
     userAgentValue,
     resolvedSearchParams,
   );

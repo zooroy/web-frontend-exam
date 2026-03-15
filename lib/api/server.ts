@@ -1,5 +1,6 @@
 interface ServerApiFetchOptions {
   cache?: RequestCache;
+  revalidate?: number;
 }
 
 export function buildServerApiUrl(
@@ -34,6 +35,10 @@ export async function fetchServerJson<T>(
     buildServerApiUrl(requestHeaders, pathname, searchParams),
     {
       cache: options.cache ?? 'no-store',
+      next:
+        typeof options.revalidate === 'number'
+          ? { revalidate: options.revalidate }
+          : undefined,
     },
   );
 

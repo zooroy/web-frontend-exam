@@ -6,7 +6,6 @@ export interface JobSearchState {
   companyName: string;
   detailId?: number;
   educationLevel?: number;
-  mode?: 'desktop' | 'mobile';
   page: number;
   salaryLevel?: number;
 }
@@ -38,16 +37,12 @@ function parsePositiveInteger(value: string | undefined): number | undefined {
 export function getJobSearchState(
   searchParams: RawSearchParams,
 ): JobSearchState {
-  const modeValue = getSearchParamValue(searchParams.mode);
-
   return {
     companyName: getSearchParamValue(searchParams.company_name)?.trim() ?? '',
     detailId: parsePositiveInteger(getSearchParamValue(searchParams.detail)),
     educationLevel: parsePositiveInteger(
       getSearchParamValue(searchParams.education_level),
     ),
-    mode:
-      modeValue === 'desktop' || modeValue === 'mobile' ? modeValue : undefined,
     page: parsePositiveInteger(getSearchParamValue(searchParams.page)) ?? 1,
     salaryLevel: parsePositiveInteger(
       getSearchParamValue(searchParams.salary_level),
@@ -79,10 +74,5 @@ export function createJobSearchParams(
   if (typeof state.detailId === 'number') {
     searchParams.set('detail', String(state.detailId));
   }
-
-  if (state.mode === 'desktop' || state.mode === 'mobile') {
-    searchParams.set('mode', state.mode);
-  }
-
   return searchParams;
 }

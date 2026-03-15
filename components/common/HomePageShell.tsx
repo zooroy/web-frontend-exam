@@ -56,7 +56,6 @@ export function HomePageShell({
               initialCompanyName={searchState.companyName}
               initialEducationLevel={searchState.educationLevel}
               initialSalaryLevel={searchState.salaryLevel}
-              mode={initialMode}
               salaryLevels={salaryLevels}
             />
             <Suspense
@@ -79,7 +78,6 @@ export function HomePageShell({
         companyName={searchState.companyName}
         educationLevel={searchState.educationLevel}
         job={detailJob}
-        mode={searchState.mode}
         open={Boolean(searchState.detailId)}
         page={searchState.page}
         salaryLevel={searchState.salaryLevel}

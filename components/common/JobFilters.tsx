@@ -14,7 +14,6 @@ interface JobFiltersProps {
   initialCompanyName: string;
   initialEducationLevel?: number;
   initialSalaryLevel?: number;
-  mode: 'desktop' | 'mobile';
   salaryLevels: SalaryItem[];
 }
 
@@ -23,7 +22,6 @@ export function JobFilters({
   initialCompanyName,
   initialEducationLevel,
   initialSalaryLevel,
-  mode,
   salaryLevels,
 }: JobFiltersProps) {
   const pathname = usePathname();
@@ -40,7 +38,6 @@ export function JobFilters({
     const searchParams = createJobSearchParams({
       companyName,
       educationLevel: educationLevel ? Number(educationLevel) : undefined,
-      mode,
       page: 1,
       salaryLevel: salaryLevel ? Number(salaryLevel) : undefined,
     });

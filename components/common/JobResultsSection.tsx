@@ -28,7 +28,6 @@ function buildHref(
     companyName: searchState.companyName,
     detailId: searchState.detailId,
     educationLevel: searchState.educationLevel,
-    mode: searchState.mode,
     page: searchState.page,
     salaryLevel: searchState.salaryLevel,
     ...overrides,

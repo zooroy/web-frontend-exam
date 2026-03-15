@@ -1,33 +1,27 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export function ResponsiveModeSync() {
-  const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(min-width: 640px)');
 
     function syncMode() {
       const nextMode = mediaQuery.matches ? 'desktop' : 'mobile';
-      const currentMode = searchParams.get('mode');
+      const currentMode = document.cookie
+        .split('; ')
+        .find((cookieValue) => cookieValue.startsWith('viewport-mode='))
+        ?.split('=')[1];
 
       if (currentMode === nextMode) {
         return;
       }
 
-      const nextSearchParams = new URLSearchParams(searchParams.toString());
-
-      nextSearchParams.set('mode', nextMode);
-
-      const search = nextSearchParams.toString();
-
-      router.replace(search ? `${pathname}?${search}` : pathname, {
-        scroll: false,
-      });
+      document.cookie = `viewport-mode=${nextMode}; path=/; max-age=31536000; samesite=lax`;
+      router.refresh();
     }
 
     syncMode();
@@ -36,7 +30,7 @@ export function ResponsiveModeSync() {
     return function cleanup() {
       mediaQuery.removeEventListener('change', syncMode);
     };
-  }, [pathname, router, searchParams]);
+  }, [router]);
 
   return null;
 }
