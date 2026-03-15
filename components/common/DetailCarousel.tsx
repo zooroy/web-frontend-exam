@@ -23,6 +23,8 @@ interface ImageDimensions {
 }
 
 const AUTO_PLAY_DELAY = 4000;
+const IMAGE_FALLBACK_HEIGHT = 150;
+const IMAGE_FALLBACK_WIDTH = 250;
 
 export function DetailCarousel({ images }: DetailCarouselProps) {
   const [api, setApi] = useState<CarouselApi>();
@@ -30,6 +32,7 @@ export function DetailCarousel({ images }: DetailCarouselProps) {
   const [imageDimensions, setImageDimensions] = useState<
     Record<string, ImageDimensions>
   >({});
+  const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
   const [isHovered, setIsHovered] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
   const [snapCount, setSnapCount] = useState(1);
@@ -66,7 +69,7 @@ export function DetailCarousel({ images }: DetailCarouselProps) {
       align: 'start',
       containScroll: 'trimSnaps',
       dragFree: false,
-      loop: true,
+      loop: false,
       skipSnaps: false,
     });
 
@@ -154,7 +157,7 @@ export function DetailCarousel({ images }: DetailCarouselProps) {
           align: 'start',
           containScroll: 'trimSnaps',
           dragFree: false,
-          loop: true,
+          loop: false,
           skipSnaps: false,
         }}
         setApi={setApi}
@@ -165,17 +168,40 @@ export function DetailCarousel({ images }: DetailCarouselProps) {
               key={`${image}-${index + 1}`}
               className="basis-auto pl-2"
             >
-              <div className="overflow-hidden bg-[var(--color-gray-300)]">
+              <div className="relative overflow-hidden bg-[var(--color-gray-300)]">
+                {!loadedImages[image] ? (
+                  <div
+                    aria-hidden="true"
+                    className="animate-pulse bg-[var(--color-gray-300)]"
+                    style={{
+                      height:
+                        imageDimensions[image]?.height ?? IMAGE_FALLBACK_HEIGHT,
+                      width:
+                        imageDimensions[image]?.width ?? IMAGE_FALLBACK_WIDTH,
+                    }}
+                  />
+                ) : null}
                 <Image
                   alt={`工作圖片 ${index + 1}`}
-                  className="h-auto w-auto max-w-none"
+                  className={cn(
+                    'h-auto w-auto max-w-none transition-opacity duration-200',
+                    loadedImages[image]
+                      ? 'opacity-100'
+                      : 'absolute inset-0 opacity-0',
+                  )}
                   draggable={false}
-                  height={imageDimensions[image]?.height ?? 150}
+                  height={
+                    imageDimensions[image]?.height ?? IMAGE_FALLBACK_HEIGHT
+                  }
                   src={image}
                   unoptimized
-                  width={imageDimensions[image]?.width ?? 250}
+                  width={imageDimensions[image]?.width ?? IMAGE_FALLBACK_WIDTH}
                   onLoad={(event) => {
                     handleImageLoad(image, event);
+                    setLoadedImages((previousImages) => ({
+                      ...previousImages,
+                      [image]: true,
+                    }));
                   }}
                 />
               </div>

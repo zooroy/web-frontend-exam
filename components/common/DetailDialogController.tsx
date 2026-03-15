@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import { DetailDialog } from '@/components/common/DetailDialog';
 import { createJobSearchParams } from '@/lib/utils/jobSearchParams';
@@ -25,6 +26,21 @@ export function DetailDialogController({
 }: DetailDialogControllerProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [displayJob, setDisplayJob] = useState<JobDetail | null>(job);
+
+  useEffect(() => {
+    if (!open || !job) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setDisplayJob(job);
+    }, 0);
+
+    return function cleanup() {
+      window.clearTimeout(timeoutId);
+    };
+  }, [job, open]);
 
   function handleClose() {
     const searchParams = createJobSearchParams({
@@ -40,5 +56,5 @@ export function DetailDialogController({
     });
   }
 
-  return <DetailDialog job={job} open={open} onClose={handleClose} />;
+  return <DetailDialog job={displayJob} open={open} onClose={handleClose} />;
 }

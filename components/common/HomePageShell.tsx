@@ -76,7 +76,7 @@ export function HomePageShell({
         companyName={searchState.companyName}
         educationLevel={searchState.educationLevel}
         job={detailJob}
-        open={Boolean(searchState.detailId && detailJob)}
+        open={Boolean(searchState.detailId)}
         page={searchState.page}
         salaryLevel={searchState.salaryLevel}
       />
