@@ -176,7 +176,7 @@ export function Pagination({
   }
 
   return (
-    <nav aria-label="工作列表分頁" className="mt-auto pt-1">
+    <nav aria-label="工作列表分頁" className="mt-auto">
       <div className="hidden items-center justify-center gap-[18px] sm:flex">
         <PaginationArrowLink
           direction="prev"

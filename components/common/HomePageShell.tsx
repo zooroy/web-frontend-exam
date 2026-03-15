@@ -41,8 +41,8 @@ export function HomePageShell({
       <ResponsiveModeSync />
       <HeroSection logoSrc="/hero-section/Logo-01.png" />
       <main className="relative z-10 mx-auto max-w-[1440px] pb-3 sm:-mt-[124px] sm:px-7 sm:pb-7">
-        <section className="flex flex-col border border-[var(--border-default)] bg-background px-4 py-4 shadow-[2px_2px_3.5px_rgba(0,0,0,0.25)] sm:min-h-[678px] sm:px-6 sm:py-6 sm:rounded-[12px]">
-          <div className="flex flex-1 flex-col gap-5 sm:gap-6">
+        <section className="flex flex-col border border-[var(--border-default)] bg-background px-4 py-4 shadow-[2px_2px_3.5px_rgba(0,0,0,0.25)] sm:px-6 sm:py-6 sm:rounded-[12px]">
+          <div className="flex flex-1 flex-col">
             <header>
               <div className="flex items-center gap-3">
                 <span className="h-4 w-1 rounded-[4px] bg-primary" />
@@ -51,13 +51,15 @@ export function HomePageShell({
                 </h1>
               </div>
             </header>
-            <JobFilters
-              educationLevels={educationLevels}
-              initialCompanyName={searchState.companyName}
-              initialEducationLevel={searchState.educationLevel}
-              initialSalaryLevel={searchState.salaryLevel}
-              salaryLevels={salaryLevels}
-            />
+            <div className="my-5">
+              <JobFilters
+                educationLevels={educationLevels}
+                initialCompanyName={searchState.companyName}
+                initialEducationLevel={searchState.educationLevel}
+                initialSalaryLevel={searchState.salaryLevel}
+                salaryLevels={salaryLevels}
+              />
+            </div>
             <Suspense
               key={jobResultsSuspenseKey}
               fallback={<JobResultsSectionSkeleton initialMode={initialMode} />}

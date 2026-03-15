@@ -2,6 +2,7 @@ import { JobCard } from '@/components/common/JobCard';
 import { Pagination } from '@/components/common/Pagination';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { getJobList } from '@/lib/api/jobs.server';
+import { cn } from '@/lib/utils';
 import {
   createJobSearchParams,
   type JobSearchState,
@@ -62,6 +63,10 @@ export async function JobResultsSection({
     Math.ceil(jobs.total / getPerPage(initialMode)),
   );
 
+  if (jobs.data.length === 0) {
+    return <EmptyResultsState initialMode={initialMode} />;
+  }
+
   return (
     <>
       <div
@@ -86,18 +91,37 @@ export async function JobResultsSection({
         ))}
       </div>
       {totalPages > 1 ? (
-        <Pagination
-          currentPage={searchState.page}
-          pageHrefs={Array.from({ length: totalPages }, (_, index) =>
-            buildHref(searchState, {
-              detailId: undefined,
-              page: index + 1,
-            }),
-          )}
-          totalPages={totalPages}
-        />
+        <div className="mt-3">
+          <Pagination
+            currentPage={searchState.page}
+            pageHrefs={Array.from({ length: totalPages }, (_, index) =>
+              buildHref(searchState, {
+                detailId: undefined,
+                page: index + 1,
+              }),
+            )}
+            totalPages={totalPages}
+          />
+        </div>
       ) : null}
     </>
+  );
+}
+
+interface EmptyResultsStateProps {
+  initialMode: 'desktop' | 'mobile';
+}
+
+function EmptyResultsState({ initialMode }: EmptyResultsStateProps) {
+  return (
+    <div
+      className={cn(
+        'flex items-center justify-center rounded-[6px] border border-[var(--border-default)]',
+        initialMode === 'desktop' ? 'min-h-[458px]' : 'min-h-[240px]',
+      )}
+    >
+      <p className="body3 font-normal text-muted-foreground">無資料</p>
+    </div>
   );
 }
 
