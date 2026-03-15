@@ -28,6 +28,7 @@ function buildHref(
     companyName: searchState.companyName,
     detailId: searchState.detailId,
     educationLevel: searchState.educationLevel,
+    mode: searchState.mode,
     page: searchState.page,
     salaryLevel: searchState.salaryLevel,
     ...overrides,
@@ -72,16 +73,17 @@ export async function JobResultsSection({
         }
       >
         {jobs.data.map((job) => (
-          <JobCard
-            key={job.id}
-            detailHref={buildHref(searchState, {
-              detailId: job.id,
-            })}
-            job={job}
-            educationLabel={educationMap.get(job.educationId) ?? '未提供'}
-            salaryLabel={salaryMap.get(job.salaryId) ?? '未提供'}
-            selected={searchState.detailId === job.id}
-          />
+          <div key={job.id}>
+            <JobCard
+              detailHref={buildHref(searchState, {
+                detailId: job.id,
+              })}
+              job={job}
+              educationLabel={educationMap.get(job.educationId) ?? '未提供'}
+              salaryLabel={salaryMap.get(job.salaryId) ?? '未提供'}
+              selected={searchState.detailId === job.id}
+            />
+          </div>
         ))}
       </div>
       {totalPages > 1 ? (
@@ -150,7 +152,9 @@ export function JobResultsSectionSkeleton({
         }
       >
         {Array.from({ length: skeletonCount }, (_, index) => (
-          <LoadingCardSkeleton key={index + 1} />
+          <div key={index + 1}>
+            <LoadingCardSkeleton />
+          </div>
         ))}
       </div>
       <div className="mt-auto hidden items-center justify-center gap-[18px] pt-1 sm:flex">

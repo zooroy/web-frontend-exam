@@ -48,7 +48,7 @@ export function HeroSection({ logoSrc }: HeroSectionProps) {
   }, [shouldReduceMotion]);
 
   return (
-    <section className="relative overflow-hidden bg-[linear-gradient(180deg,var(--color-gray-700)_0%,var(--color-gray-1000)_100%)]">
+    <section className="relative overflow-hidden">
       <div className="mx-auto flex max-w-[1440px] items-end px-0 pt-0">
         <div className="relative aspect-[375/238] w-full sm:aspect-[1440/823]">
           {/* 背景 */}

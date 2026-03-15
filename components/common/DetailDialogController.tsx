@@ -11,6 +11,7 @@ interface DetailDialogControllerProps {
   companyName: string;
   educationLevel?: number;
   job: JobDetail | null;
+  mode?: 'desktop' | 'mobile';
   open: boolean;
   page: number;
   salaryLevel?: number;
@@ -20,6 +21,7 @@ export function DetailDialogController({
   companyName,
   educationLevel,
   job,
+  mode,
   open,
   page,
   salaryLevel,
@@ -46,6 +48,7 @@ export function DetailDialogController({
     const searchParams = createJobSearchParams({
       companyName,
       educationLevel,
+      mode,
       page,
       salaryLevel,
     });

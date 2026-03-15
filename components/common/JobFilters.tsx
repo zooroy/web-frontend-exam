@@ -14,6 +14,7 @@ interface JobFiltersProps {
   initialCompanyName: string;
   initialEducationLevel?: number;
   initialSalaryLevel?: number;
+  mode: 'desktop' | 'mobile';
   salaryLevels: SalaryItem[];
 }
 
@@ -22,6 +23,7 @@ export function JobFilters({
   initialCompanyName,
   initialEducationLevel,
   initialSalaryLevel,
+  mode,
   salaryLevels,
 }: JobFiltersProps) {
   const pathname = usePathname();
@@ -38,6 +40,7 @@ export function JobFilters({
     const searchParams = createJobSearchParams({
       companyName,
       educationLevel: educationLevel ? Number(educationLevel) : undefined,
+      mode,
       page: 1,
       salaryLevel: salaryLevel ? Number(salaryLevel) : undefined,
     });
@@ -49,36 +52,42 @@ export function JobFilters({
   }
 
   return (
-    <div className="hidden items-end gap-[18px] sm:grid sm:grid-cols-2 lg:grid-cols-[minmax(0,1.33fr)_minmax(0,1fr)_minmax(0,1fr)_104px]">
-      <FilterTextField
-        label="公司名稱"
-        placeholder="輸入公司名稱"
-        value={companyName}
-        onChange={(event) => {
-          setCompanyName(event.target.value);
-        }}
-      />
-      <FilterSelect
-        label="學歷"
-        placeholder="請選擇學歷"
-        value={educationLevel}
-        onValueChange={setEducationLevel}
-        options={educationLevels.map((item) => ({
-          value: String(item.id),
-          label: item.label,
-        }))}
-      />
-      <FilterSelect
-        label="薪資範圍"
-        placeholder="請選擇薪資條件"
-        value={salaryLevel}
-        onValueChange={setSalaryLevel}
-        options={salaryLevels.map((item) => ({
-          value: String(item.id),
-          label: item.label,
-        }))}
-      />
-      <BrandButton className="w-full px-0" onClick={handleSearch}>
+    <div className="hidden items-end gap-[18px] sm:flex">
+      <div className="min-w-0 flex-[1_1_647px]">
+        <FilterTextField
+          label="公司名稱"
+          placeholder="輸入公司名稱"
+          value={companyName}
+          onChange={(event) => {
+            setCompanyName(event.target.value);
+          }}
+        />
+      </div>
+      <div className="min-w-0 flex-[1_1_263px]">
+        <FilterSelect
+          label="學歷"
+          placeholder="請選擇學歷"
+          value={educationLevel}
+          onValueChange={setEducationLevel}
+          options={educationLevels.map((item) => ({
+            value: String(item.id),
+            label: item.label,
+          }))}
+        />
+      </div>
+      <div className="min-w-0 flex-[1_1_263px]">
+        <FilterSelect
+          label="薪資範圍"
+          placeholder="請選擇薪資條件"
+          value={salaryLevel}
+          onValueChange={setSalaryLevel}
+          options={salaryLevels.map((item) => ({
+            value: String(item.id),
+            label: item.label,
+          }))}
+        />
+      </div>
+      <BrandButton className="w-[109px] shrink-0 px-0" onClick={handleSearch}>
         條件搜尋
       </BrandButton>
     </div>

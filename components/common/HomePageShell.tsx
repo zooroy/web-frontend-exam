@@ -7,6 +7,7 @@ import {
   JobResultsSection,
   JobResultsSectionSkeleton,
 } from '@/components/common/JobResultsSection';
+import { ResponsiveModeSync } from '@/components/common/ResponsiveModeSync';
 import { type JobSearchState } from '@/lib/utils/jobSearchParams';
 import type { EducationItem, JobDetail, SalaryItem } from '@/types/api';
 
@@ -36,10 +37,11 @@ export function HomePageShell({
   ].join(':');
 
   return (
-    <div className="min-h-screen bg-[var(--color-gray-300)]">
+    <div className="min-h-screen  bg-[linear-gradient(90deg,var(--color-gray-700)_0%,var(--color-gray-1000)_100%)]">
+      <ResponsiveModeSync />
       <HeroSection logoSrc="/hero-section/Logo-01.png" />
-      <main className="relative z-10 mx-auto max-w-[1440px] px-3 pb-10 sm:-mt-[124px] sm:px-7 sm:pb-16">
-        <section className="flex flex-col rounded-[12px] border border-[var(--border-default)] bg-background px-4 py-4 shadow-[2px_2px_3.5px_rgba(0,0,0,0.25)] sm:min-h-[678px] sm:px-6 sm:py-6">
+      <main className="relative z-10 mx-auto max-w-[1440px] pb-3 sm:-mt-[124px] sm:px-7 sm:pb-7">
+        <section className="flex flex-col border border-[var(--border-default)] bg-background px-4 py-4 shadow-[2px_2px_3.5px_rgba(0,0,0,0.25)] sm:min-h-[678px] sm:px-6 sm:py-6 sm:rounded-[12px]">
           <div className="flex flex-1 flex-col gap-5 sm:gap-6">
             <header>
               <div className="flex items-center gap-3">
@@ -54,6 +56,7 @@ export function HomePageShell({
               initialCompanyName={searchState.companyName}
               initialEducationLevel={searchState.educationLevel}
               initialSalaryLevel={searchState.salaryLevel}
+              mode={initialMode}
               salaryLevels={salaryLevels}
             />
             <Suspense
@@ -76,6 +79,7 @@ export function HomePageShell({
         companyName={searchState.companyName}
         educationLevel={searchState.educationLevel}
         job={detailJob}
+        mode={searchState.mode}
         open={Boolean(searchState.detailId)}
         page={searchState.page}
         salaryLevel={searchState.salaryLevel}
