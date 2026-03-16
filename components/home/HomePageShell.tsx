@@ -49,7 +49,7 @@ export function HomePageShell({
                 </h1>
               </div>
             </header>
-            <div className="my-5">
+            <div className="mb-3 sm:my-5">
               <JobFilters
                 educationLevels={educationLevels}
                 initialCompanyName={searchState.companyName}

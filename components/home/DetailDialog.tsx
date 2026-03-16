@@ -58,7 +58,7 @@ function JobDescriptionFallback() {
 
 function JobHeaderFallback() {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
       <Skeleton className="h-6 w-40 rounded bg-[var(--color-gray-300)] sm:h-7 sm:w-52" />
       <Skeleton className="h-4 w-32 rounded bg-[var(--color-gray-300)] sm:h-5 sm:w-40" />
     </div>
@@ -83,6 +83,12 @@ export function DetailDialog({
       <DialogPortal>
         <DialogOverlay className="!bg-overlay backdrop-blur-none supports-backdrop-filter:backdrop-blur-none" />
         <DialogPrimitive.Content
+          onInteractOutside={(event) => {
+            event.preventDefault();
+          }}
+          onPointerDownOutside={(event) => {
+            event.preventDefault();
+          }}
           className={cn(
             'fixed top-1/2 left-1/2 z-50 flex max-h-[min(768px,calc(100vh-44px))] w-[min(750px,calc(100vw-44px))] max-w-none -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-[4px] bg-background shadow-[var(--shadow-modal)] outline-none',
             'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',

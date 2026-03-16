@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
-import { memo, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import backgroundImage from '@/public/hero-section/background.webp';
 import characterWhiteImage from '@/public/hero-section/character-white.webp';
@@ -20,13 +20,17 @@ function HeroSectionComponent() {
   const shouldReduceMotion = useReducedMotion();
   const [eyeOffset, setEyeOffset] = useState<EyeOffset>({ x: 0, y: 0 });
   const [isInteractiveReady, setIsInteractiveReady] = useState(false);
-  const [isBackgroundLoaded, setIsBackgroundLoaded] = useState(false);
-  const [isCharacterWhiteLoaded, setIsCharacterWhiteLoaded] = useState(false);
-  const [isCharacterLoaded, setIsCharacterLoaded] = useState(false);
   const [isLogoEntranceReady, setIsLogoEntranceReady] = useState(false);
   const [hasLogoEntered, setHasLogoEntered] = useState(false);
-  const isSceneReady =
-    isBackgroundLoaded && isCharacterWhiteLoaded && isCharacterLoaded;
+  const [isCharacterWhiteLoaded, setIsCharacterWhiteLoaded] = useState(false);
+  const [isCharacterLoaded, setIsCharacterLoaded] = useState(false);
+  const [isLeftEyeLoaded, setIsLeftEyeLoaded] = useState(false);
+  const [isRightEyeLoaded, setIsRightEyeLoaded] = useState(false);
+  const isCharacterGroupReady =
+    isCharacterWhiteLoaded &&
+    isCharacterLoaded &&
+    isLeftEyeLoaded &&
+    isRightEyeLoaded;
 
   useEffect(() => {
     if (shouldReduceMotion) {
@@ -43,18 +47,21 @@ function HeroSectionComponent() {
   }, [shouldReduceMotion]);
 
   useEffect(() => {
-    if (!isSceneReady) {
-      return undefined;
-    }
+    const timeoutId = window.setTimeout(
+      () => {
+        setIsLogoEntranceReady(true);
 
-    const timeoutId = window.setTimeout(() => {
-      setIsLogoEntranceReady(true);
-    }, 120);
+        if (shouldReduceMotion) {
+          setHasLogoEntered(true);
+        }
+      },
+      shouldReduceMotion ? 0 : 120,
+    );
 
     return function cleanup() {
       window.clearTimeout(timeoutId);
     };
-  }, [isSceneReady]);
+  }, [shouldReduceMotion]);
 
   useEffect(() => {
     if (shouldReduceMotion || !isInteractiveReady) {
@@ -99,18 +106,31 @@ function HeroSectionComponent() {
             placeholder="blur"
             className="object-cover"
             sizes="100vw"
-            onLoad={() => {
-              setIsBackgroundLoaded(true);
-            }}
           />
           {/* 人物 */}
-          <div className="absolute inset-y-0 left-0 w-full">
+          <motion.div
+            initial={false}
+            animate={
+              isCharacterGroupReady
+                ? { opacity: 1, y: 0 }
+                : { opacity: 0, y: shouldReduceMotion ? 0 : 10 }
+            }
+            transition={
+              shouldReduceMotion
+                ? { duration: 0 }
+                : {
+                    duration: 0.35,
+                    ease: 'easeOut',
+                  }
+            }
+            className="absolute inset-y-0 left-0 w-full"
+          >
             <div className="relative h-full w-full">
               <Image
                 src={characterWhiteImage}
                 alt="Hero portrait highlight"
                 fill
-                placeholder="blur"
+                priority
                 className="object-left-bottom object-contain"
                 sizes="(min-width: 640px) 1097px, 100vw"
                 onLoad={() => {
@@ -135,6 +155,9 @@ function HeroSectionComponent() {
                     height={33}
                     priority
                     className="h-auto w-full"
+                    onLoad={() => {
+                      setIsLeftEyeLoaded(true);
+                    }}
                   />
                 </motion.div>
               </div>
@@ -156,6 +179,9 @@ function HeroSectionComponent() {
                     height={30}
                     priority
                     className="h-auto w-full"
+                    onLoad={() => {
+                      setIsRightEyeLoaded(true);
+                    }}
                   />
                 </motion.div>
               </div>
@@ -163,7 +189,7 @@ function HeroSectionComponent() {
                 src={characterImage}
                 alt="Hero portrait"
                 fill
-                placeholder="blur"
+                priority
                 className="object-left-bottom object-contain"
                 sizes="(min-width: 640px) 1097px, 100vw"
                 onLoad={() => {
@@ -171,7 +197,7 @@ function HeroSectionComponent() {
                 }}
               />
             </div>
-          </div>
+          </motion.div>
           {/* logo */}
           <motion.div
             initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.82 }}
@@ -199,12 +225,12 @@ function HeroSectionComponent() {
           >
             <motion.div
               animate={
-                shouldReduceMotion || !isInteractiveReady || !hasLogoEntered
+                shouldReduceMotion || !hasLogoEntered
                   ? undefined
                   : { scale: [1, 1.05, 1] }
               }
               transition={
-                shouldReduceMotion || !isInteractiveReady || !hasLogoEntered
+                shouldReduceMotion || !hasLogoEntered
                   ? undefined
                   : {
                       duration: 1.5,
@@ -218,7 +244,6 @@ function HeroSectionComponent() {
                 alt="HeeLoo logo"
                 width={540}
                 height={323}
-                placeholder="blur"
                 className="h-auto w-full"
               />
             </motion.div>
@@ -229,4 +254,4 @@ function HeroSectionComponent() {
   );
 }
 
-export const HeroSection = memo(HeroSectionComponent);
+export const HeroSection = HeroSectionComponent;

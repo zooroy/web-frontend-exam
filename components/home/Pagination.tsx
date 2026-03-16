@@ -86,7 +86,7 @@ function PaginationPageLink({
         isCurrent
           ? 'bg-[var(--color-gray-300)] text-foreground'
           : 'text-foreground hover:text-[var(--color-gray-700)]',
-        disabled && 'pointer-events-none opacity-60',
+        disabled && 'pointer-events-none',
       )}
     >
       {label}

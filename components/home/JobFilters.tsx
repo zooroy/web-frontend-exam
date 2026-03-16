@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
 import { BrandButton } from '@/components/common/BrandButton';
@@ -26,6 +26,7 @@ export function JobFilters({
 }: JobFiltersProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [companyName, setCompanyName] = useState(initialCompanyName);
   const [educationLevel, setEducationLevel] = useState(
@@ -34,18 +35,25 @@ export function JobFilters({
   const [salaryLevel, setSalaryLevel] = useState(
     initialSalaryLevel ? String(initialSalaryLevel) : '',
   );
+  const targetSearchParams = createJobSearchParams({
+    companyName,
+    educationLevel: educationLevel ? Number(educationLevel) : undefined,
+    page: 1,
+    salaryLevel: salaryLevel ? Number(salaryLevel) : undefined,
+  });
+  const targetSearch = targetSearchParams.toString();
+  const targetHref = targetSearch ? `${pathname}?${targetSearch}` : pathname;
+  const currentSearch = searchParams.toString();
+  const currentHref = currentSearch ? `${pathname}?${currentSearch}` : pathname;
+  const isSearchUnchanged = targetHref === currentHref;
 
   function handleSearch() {
-    const searchParams = createJobSearchParams({
-      companyName,
-      educationLevel: educationLevel ? Number(educationLevel) : undefined,
-      page: 1,
-      salaryLevel: salaryLevel ? Number(salaryLevel) : undefined,
-    });
-    const search = searchParams.toString();
+    if (isSearchUnchanged) {
+      return;
+    }
 
     startTransition(() => {
-      router.push(search ? `${pathname}?${search}` : pathname, {
+      router.push(targetHref, {
         scroll: false,
       });
     });
