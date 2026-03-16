@@ -1,10 +1,14 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 
 import { DetailDialog } from '@/components/home/DetailDialog';
 import { DETAIL_DIALOG_OPEN_EVENT } from '@/components/home/DetailTriggerLink';
+import {
+  preloadJobDetail,
+  setCachedJobDetail,
+} from '@/lib/api/jobs.client';
 import { createJobSearchParams } from '@/lib/utils/jobSearchParams';
 import type { JobDetail } from '@/types/api';
 
@@ -30,15 +34,45 @@ export function DetailDialogController({
   const pathname = usePathname();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [clientJob, setClientJob] = useState<JobDetail | null>(job);
+  const [closingJob, setClosingJob] = useState<JobDetail | null>(null);
   const [pendingDetailId, setPendingDetailId] = useState<number | undefined>(
     detailId,
   );
+  const closeTimerRef = useRef<number | null>(null);
+  const latestDisplayJobRef = useRef<JobDetail | null>(job);
   const activeDetailId = detailId ?? pendingDetailId;
   const isDialogOpen = typeof activeDetailId === 'number';
+  const serverJob =
+    typeof detailId === 'number' && job?.id === detailId ? job : null;
   const displayJob =
-    isDialogOpen && job?.id === activeDetailId && typeof detailId === 'number'
-      ? job
-      : null;
+    (isDialogOpen && serverJob?.id === activeDetailId && serverJob) ||
+    (isDialogOpen && clientJob?.id === activeDetailId && clientJob) ||
+    null;
+  const renderedJob = displayJob ?? closingJob;
+
+  useEffect(() => {
+    if (!job) {
+      return;
+    }
+
+    setCachedJobDetail(job);
+  }, [job]);
+
+  useEffect(() => {
+    if (displayJob) {
+      latestDisplayJobRef.current = displayJob;
+    }
+  }, [displayJob]);
+
+  useEffect(
+    () => () => {
+      if (closeTimerRef.current !== null) {
+        window.clearTimeout(closeTimerRef.current);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     function handlePendingOpen(event: Event) {
@@ -70,6 +104,34 @@ export function DetailDialogController({
     };
   }, [detailId, open]);
 
+  useEffect(() => {
+    if (typeof activeDetailId !== 'number') {
+      return undefined;
+    }
+
+    if (serverJob?.id === activeDetailId || clientJob?.id === activeDetailId) {
+      return undefined;
+    }
+
+    let isCancelled = false;
+
+    void preloadJobDetail(activeDetailId)
+      .then((resolvedJob) => {
+        if (!isCancelled) {
+          setClientJob(resolvedJob);
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          setClientJob(null);
+        }
+      });
+
+    return function cleanup() {
+      isCancelled = true;
+    };
+  }, [activeDetailId, clientJob, serverJob]);
+
   function handleClose() {
     const searchParams = createJobSearchParams({
       companyName,
@@ -78,6 +140,19 @@ export function DetailDialogController({
       salaryLevel,
     });
     const search = searchParams.toString();
+
+    if (latestDisplayJobRef.current) {
+      setClosingJob(latestDisplayJobRef.current);
+    }
+
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current);
+    }
+
+    closeTimerRef.current = window.setTimeout(() => {
+      setClosingJob(null);
+      closeTimerRef.current = null;
+    }, 100);
 
     setPendingDetailId(undefined);
 
@@ -90,7 +165,7 @@ export function DetailDialogController({
 
   return (
     <DetailDialog
-      job={displayJob}
+      job={renderedJob}
       open={isDialogOpen}
       pending={isPending || (isDialogOpen && displayJob === null)}
       onClose={handleClose}

@@ -22,7 +22,7 @@ const DetailCarousel = dynamic(
       default: module.DetailCarousel,
     })),
   {
-    loading: () => <DetailCarouselFallback />,
+    loading: () => null,
     ssr: false,
   },
 );
@@ -43,25 +43,6 @@ interface DetailDialogProps {
   onClose: () => void;
   open: boolean;
   pending?: boolean;
-}
-
-function DetailCarouselFallback() {
-  return (
-    <div className="flex flex-col gap-[10px]">
-      <Skeleton className="h-[150px] w-full rounded-none bg-[var(--color-gray-300)]" />
-      <div className="flex justify-center gap-2">
-        {Array.from({ length: 3 }, (_, index) => (
-          <Skeleton
-            key={index + 1}
-            className={cn(
-              'rounded-full bg-[var(--color-gray-500)]',
-              index === 0 ? 'h-[6px] w-6 bg-primary' : 'size-[6px]',
-            )}
-          />
-        ))}
-      </div>
-    </div>
-  );
 }
 
 function JobDescriptionFallback() {
@@ -128,17 +109,13 @@ export function DetailDialog({
             ) : (
               <JobHeaderFallback />
             )}
-            {open && job ? (
-              <DetailCarousel images={job.companyPhoto} />
-            ) : (
-              <DetailCarouselFallback />
-            )}
+            <DetailCarousel images={job?.companyPhoto} loading={!job} />
             <div className="flex flex-col gap-2 sm:gap-2">
               <h3 className="body3 font-bold text-foreground sm:body4">
                 工作內容
               </h3>
               <div className="body3 font-normal leading-[1.25] text-[var(--color-gray-800)] [&_a]:font-bold [&_a]:text-primary [&_a]:underline [&_h1]:body4 [&_h1]:font-bold [&_h2]:body3 [&_h2]:mt-5 [&_h2]:font-bold [&_li]:ml-5 [&_li]:list-disc [&_p]:mt-4">
-                {open && job ? (
+                {job ? (
                   <JobDescription description={job.description} />
                 ) : (
                   <JobDescriptionFallback />

@@ -71,19 +71,13 @@ export function SalaryOutlineIcon({ className, ...props }: OutlineIconProps) {
 export function SelectCaretIcon({ className, ...props }: OutlineIconProps) {
   return (
     <svg
-      viewBox="0 0 12 12"
+      viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
       className={className}
       {...props}
     >
-      <path
-        d="M2.25 4.5L6 8.25L9.75 4.5"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M7 9.5L12 14.5L17 9.5H7Z" fill="currentColor" />
     </svg>
   );
 }

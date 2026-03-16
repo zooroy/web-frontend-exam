@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 
+import { preloadJobDetail } from '@/lib/api/jobs.client';
+
 interface DetailTriggerLinkProps {
   children: React.ReactNode;
   className?: string;
@@ -28,6 +30,7 @@ export function DetailTriggerLink({
             detail: { detailId },
           }),
         );
+        void preloadJobDetail(detailId);
       }}
     >
       {children}

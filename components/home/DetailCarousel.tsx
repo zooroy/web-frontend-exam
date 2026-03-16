@@ -15,7 +15,8 @@ import { cn } from '@/lib/utils';
 import type { SyntheticEvent } from 'react';
 
 interface DetailCarouselProps {
-  images: string[];
+  images?: string[];
+  loading?: boolean;
 }
 
 interface ImageDimensions {
@@ -28,7 +29,10 @@ const IMAGE_FALLBACK_HEIGHT = 150;
 const IMAGE_FALLBACK_WIDTH = 250;
 const VISIBLE_IMAGE_RADIUS = 2;
 
-export function DetailCarousel({ images }: DetailCarouselProps) {
+export function DetailCarousel({
+  images = [],
+  loading = false,
+}: DetailCarouselProps) {
   const [api, setApi] = useState<CarouselApi>();
   const [activePage, setActivePage] = useState(0);
   const [imageDimensions, setImageDimensions] = useState<
@@ -39,6 +43,7 @@ export function DetailCarousel({ images }: DetailCarouselProps) {
   const [isInteracting, setIsInteracting] = useState(false);
   const [snapCount, setSnapCount] = useState(1);
   const dotIndexes = Array.from({ length: snapCount }, (_, index) => index);
+  const isLoading = loading || images.length === 0;
 
   useEffect(() => {
     if (!api) {
@@ -144,6 +149,9 @@ export function DetailCarousel({ images }: DetailCarouselProps) {
   }
 
   return (
+    isLoading ? (
+      <DetailCarouselLoading />
+    ) : (
     <div
       className="flex flex-col gap-[10px]"
       onMouseEnter={() => {
@@ -207,6 +215,26 @@ export function DetailCarousel({ images }: DetailCarouselProps) {
               setIsInteracting(true);
               api?.scrollTo(dotIndex);
             }}
+          />
+        ))}
+      </div>
+    </div>
+    )
+  );
+}
+
+function DetailCarouselLoading() {
+  return (
+    <div className="flex flex-col gap-[10px]">
+      <Skeleton className="h-[150px] w-full rounded-none bg-[var(--color-gray-300)]" />
+      <div className="flex justify-center gap-2">
+        {Array.from({ length: 3 }, (_, index) => (
+          <Skeleton
+            key={index + 1}
+            className={cn(
+              'rounded-full bg-[var(--color-gray-500)]',
+              index === 0 ? 'h-[6px] w-6 bg-primary' : 'size-[6px]',
+            )}
           />
         ))}
       </div>
