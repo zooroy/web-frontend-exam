@@ -15,13 +15,11 @@ export interface HomePageRequestModel {
 }
 
 export function getHomePageRequestModel(
-  cookieMode: 'desktop' | 'mobile' | undefined,
   userAgentValue: string,
   searchParams: RawSearchParams,
 ): HomePageRequestModel {
   const searchState = getJobSearchState(searchParams);
-  const mode =
-    cookieMode ?? (isMobileUserAgent(userAgentValue) ? 'mobile' : 'desktop');
+  const mode = isMobileUserAgent(userAgentValue) ? 'mobile' : 'desktop';
 
   return {
     mode,
