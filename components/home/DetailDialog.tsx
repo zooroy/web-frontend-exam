@@ -17,7 +17,7 @@ import type { JobDetail } from '@/types/api';
 
 const DetailCarousel = dynamic(
   () =>
-    import('@/components/common/DetailCarousel').then((module) => ({
+    import('@/components/home/DetailCarousel').then((module) => ({
       default: module.DetailCarousel,
     })),
   {
@@ -28,7 +28,7 @@ const DetailCarousel = dynamic(
 
 const JobDescription = dynamic(
   () =>
-    import('@/components/common/JobDescription').then((module) => ({
+    import('@/components/home/JobDescription').then((module) => ({
       default: module.JobDescription,
     })),
   {

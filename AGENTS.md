@@ -31,18 +31,17 @@
 
 ## 2. 技術棧
 
-| 層級                        | 技術                           | 版本              |
-| --------------------------- | ------------------------------ | ----------------- |
-| Framework                   | Next.js                        | 16.x (App Router) |
-| Language                    | TypeScript                     | 5.x (strict mode) |
-| Styling                     | Tailwind CSS                   | 4.x               |
-| UI Components               | shadcn/ui                      | latest            |
-| Server/Client State         | TanStack Query                 | v5                |
-| Animation                   | Framer Motion                  | latest            |
-| Unit/Integration Test       | Vitest + React Testing Library | latest            |
-| E2E / Server Component Test | Playwright                     | latest            |
-| Linter                      | ESLint (Airbnb config)         | latest            |
-| Formatter                   | Prettier                       | latest            |
+| 層級                | 技術                      | 版本              |
+| ------------------- | ------------------------- | ----------------- |
+| Framework           | Next.js                   | 16.x (App Router) |
+| Language            | TypeScript                | 5.x (strict mode) |
+| Styling             | Tailwind CSS              | 4.x               |
+| UI Components       | shadcn/ui                 | latest            |
+| Server/Client State | Next.js fetch + URL state | built-in          |
+| Animation           | Framer Motion             | latest            |
+| Testing             | 尚未建立測試工具鏈        | —                 |
+| Linter              | ESLint (Airbnb config)    | latest            |
+| Formatter           | Prettier                  | latest            |
 
 ---
 
@@ -50,44 +49,62 @@
 
 ```
 ├── app/                          # Next.js App Router 根目錄
-│   ├── (routes)/                 # 路由群組（不影響 URL）
-│   │   └── [feature]/
-│   │       ├── page.tsx          # Server Component（預設）
-│   │       ├── layout.tsx        # Layout（Server Component）
-│   │       ├── loading.tsx       # Suspense fallback
-│   │       ├── error.tsx         # Error boundary（'use client'）
-│   │       └── not-found.tsx     # 404
-│   ├── api/                      # Route Handlers
-│   └── globals.css
+│   ├── api/
+│   │   └── v1/                   # Route Handlers
+│   │       ├── educationLevelList/
+│   │       ├── jobs/
+│   │       └── salaryLevelList/
+│   ├── error.tsx                 # Route error boundary（'use client'）
+│   ├── globals.css               # 全域樣式、design tokens、typography utilities
+│   ├── layout.tsx                # Root layout
+│   ├── loading.tsx               # Route-level loading fallback
+│   └── page.tsx                  # 首頁 Server Component
 │
 ├── components/
 │   ├── ui/                       # shadcn/ui 原始元件（禁止直接修改）
-│   └── common/                   # 專案共用元件與頁面組裝元件
+│   ├── common/                   # 跨頁共用元件
+│   │   ├── BrandButton.tsx
+│   │   ├── FilterSelect.tsx
+│   │   └── FilterTextField.tsx
+│   ├── home/                     # 首頁專用元件
+│   │   ├── HeroSection.tsx
+│   │   ├── HomePageShell.tsx
+│   │   ├── JobFilters.tsx
+│   │   ├── JobResultsSection.tsx
+│   │   ├── JobCard.tsx
+│   │   ├── Pagination.tsx
+│   │   ├── DetailDialog.tsx
+│   │   ├── DetailDialogController.tsx
+│   │   ├── DetailCarousel.tsx
+│   │   └── JobDescription.tsx
+│   └── icons/                    # 可跨元件重用的 icon primitives
 │
-├── hooks/                    # 自定義 React hooks（Client 端）
+├── data/                         # Mock data source，提供 Route Handlers 使用
+│   ├── educationList.js
+│   ├── jobList.js
+│   └── salaryList.js
+│
+├── docs/                         # 規格文件
+│   ├── api-spec.md
+│   └── design-spec.md
 │
 ├── lib/
 │   ├── api/                      # API client、fetch helpers
-│   ├── queries/                  # TanStack Query queryOptions / mutations
 │   ├── utils/                    # 純函式工具
-│   └── validations/              # Zod schemas
+│   └── validations/              # 預留給 schema / validation 擴充
 │
 ├── types/                        # 全域 TypeScript 型別定義
 │
-├── tests/
-│   ├── unit/                     # Vitest 單元測試
-│   ├── integration/              # Vitest + RTL 整合測試（Client 端）
-│   └── e2e/                      # Playwright 測試
-│
 └── public/                       # 靜態資源
+    └── hero-section/
 ```
 
 **規則：**
 
 - 每個目錄只做一件事，不跨層混放邏輯
 - `components/ui/` 的 shadcn 元件透過 CLI 產生後只封裝，不直接修改原始碼
-- 在目前專案規模下，元件統一放在 `components/common/`，暫不建立 `components/features/`
-- `lib/queries/` 統一管理所有 TanStack Query 的 `queryOptions`、`infiniteQueryOptions`、`mutationOptions`
+- 在目前專案規模下，共用元件放在 `components/common/`，首頁專用元件放在 `components/home/`
+- `data/` 為 mock data source，`app/api/v1/*` 直接讀取，不額外繞經中介層
 
 ---
 
@@ -106,17 +123,16 @@
 
 ```typescript
 // ✅ 正確的 import 順序
-import { cache } from "react";
+import { cache } from 'react';
 
-import { dehydrate } from "@tanstack/react-query";
-import { z } from "zod";
+import { z } from 'zod';
 
-import { QueryProvider } from "@/components/common/QueryProvider";
-import { getUserById } from "@/lib/api/users";
+import { BrandButton } from '@/components/common/BrandButton';
+import { getJobList } from '@/lib/api/jobs.server';
 
-import { UserCard } from "./UserCard";
+import { UserCard } from './UserCard';
 
-import type { User } from "@/types/user";
+import type { User } from '@/types/user';
 ```
 
 ### 4.2 命名規範
@@ -161,7 +177,6 @@ export const UserProfile = ({ userId }: UserProfileProps) => {
   - 瀏覽器 API（window、document）
   - 事件處理（onClick 等互動）
   - Framer Motion 動畫
-  - TanStack Query（client-side fetching）
         │
        YES → 加上 'use client'，設計為 Client Component
         │
@@ -173,24 +188,41 @@ export const UserProfile = ({ userId }: UserProfileProps) => {
 ### 5.2 Server Component 規範
 
 ```typescript
-// app/users/[id]/page.tsx
+// app/page.tsx
 import { Suspense } from 'react';
+import { headers } from 'next/headers';
 
-import { getUserById } from '@/lib/api/users';
-import { UserProfileSkeleton } from '@/components/common/users/UserProfileSkeleton';
-import { UserProfile } from '@/components/common/users/UserProfile';
+import { HomePageShell } from '@/components/home/HomePageShell';
+import { getEducationList, getSalaryList } from '@/lib/api/jobs.server';
+import { getHomePageRequestModel } from '@/lib/utils/homePageModel';
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function UserPage({ params }: PageProps) {
-  const { id } = await params;
-  const user = await getUserById(id);
+export default async function HomePage({ searchParams }: PageProps) {
+  const requestHeaders = await headers();
+  const resolvedSearchParams = await searchParams;
+  const userAgentValue = requestHeaders.get('user-agent') ?? '';
+  const { mode, searchState } = getHomePageRequestModel(
+    userAgentValue,
+    resolvedSearchParams,
+  );
+  const [educationLevels, salaryLevels] = await Promise.all([
+    getEducationList(requestHeaders),
+    getSalaryList(requestHeaders),
+  ]);
 
   return (
-    <Suspense fallback={<UserProfileSkeleton />}>
-      <UserProfile user={user} />
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomePageShell
+        detailJob={null}
+        educationLevels={educationLevels}
+        headers={requestHeaders}
+        initialMode={mode}
+        salaryLevels={salaryLevels}
+        searchState={searchState}
+      />
     </Suspense>
   );
 }
@@ -201,32 +233,35 @@ export default async function UserPage({ params }: PageProps) {
 ```typescript
 'use client';
 
-// components/common/users/UserActions.tsx
 import { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { BrandButton } from '@/components/common/BrandButton';
+import { createJobSearchParams } from '@/lib/utils/jobSearchParams';
 
-import { Button } from '@/components/ui/button';
-import { userMutations } from '@/lib/queries/users';
-
-import type { User } from '@/types/user';
-
-interface UserActionsProps {
-  user: User;
+interface JobFiltersProps {
+  initialCompanyName: string;
 }
 
-export function UserActions({ user }: UserActionsProps) {
-  const queryClient = useQueryClient();
-  const { mutate, isPending } = useMutation(userMutations.follow(queryClient));
+export function JobFilters({ initialCompanyName }: JobFiltersProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [companyName, setCompanyName] = useState(initialCompanyName);
+
+  function handleSearch() {
+    const searchParams = createJobSearchParams({
+      companyName,
+      page: 1,
+    });
+    const search = searchParams.toString();
+
+    router.push(search ? `${pathname}?${search}` : pathname, {
+      scroll: false,
+    });
+  }
 
   return (
-    <Button
-      onClick={() => mutate(user.id)}
-      disabled={isPending}
-      aria-busy={isPending}
-    >
-      Follow
-    </Button>
+    <BrandButton onClick={handleSearch}>條件搜尋</BrandButton>
   );
 }
 ```
@@ -243,89 +278,67 @@ export function UserActions({ user }: UserActionsProps) {
 
 ### 6.1 Server Component 資料獲取
 
-使用 Next.js 原生 `fetch` 並配合 `cache()`：
+Server Component 優先透過 `lib/api/*.server.ts` 提供的 `get***` helper 取資料。不要在頁面內重複拼接 API URL。
 
 ```typescript
-// lib/api/users.ts
-import { cache } from "react";
+// lib/api/jobs.server.ts
+import { unstable_cache } from 'next/cache';
 
-export const getUserById = cache(async (id: string) => {
-  const res = await fetch(`${process.env.API_URL}/users/${id}`, {
-    next: { revalidate: 60 }, // ISR：60 秒重新驗證
-  });
+import { buildServerApiUrl, fetchServerJson } from '@/lib/api/server-fetch';
 
-  if (!res.ok) throw new Error("Failed to fetch user");
+import type { EducationItem, SalaryItem } from '@/types/api';
 
-  return res.json() as Promise<User>;
-});
+const getCachedEducationList = unstable_cache(
+  async (requestHeaders: Headers) =>
+    fetchServerJson<EducationItem[]>(
+      buildServerApiUrl(requestHeaders, '/api/v1/educationLevelList'),
+      {
+        cache: 'force-cache',
+        revalidate: 3600,
+      },
+    ),
+  ['education-level-list'],
+  { revalidate: 3600 },
+);
+
+export function getEducationList(requestHeaders: Headers) {
+  return getCachedEducationList(requestHeaders);
+}
 ```
 
-### 6.2 TanStack Query 規範（Client 端）
+### 6.2 Route Handlers 規範
 
-所有 query 設定集中在 `lib/queries/`，使用 `queryOptions()` factory：
+`app/api/v1/*` 為 mock API 層，直接讀取 `data/*`，不額外建立 repository / query layer。
 
 ```typescript
-// lib/queries/users.ts
-import { queryOptions, mutationOptions } from "@tanstack/react-query";
+// app/api/v1/jobs/route.ts
+import { NextRequest, NextResponse } from 'next/server';
 
-import { fetchUsers, followUser } from "@/lib/api/users";
+import jobList from '@/data/jobList';
 
-import type { QueryClient } from "@tanstack/react-query";
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const page = Number(searchParams.get('page') ?? '1');
+  const perPage = Number(searchParams.get('per_page') ?? '6');
 
-export const userQueries = {
-  all: () =>
-    queryOptions({
-      queryKey: ["users"],
-      queryFn: fetchUsers,
-      staleTime: 1000 * 60 * 5, // 5 分鐘
-    }),
+  const paginatedJobs = jobList.slice((page - 1) * perPage, page * perPage);
 
-  detail: (id: string) =>
-    queryOptions({
-      queryKey: ["users", id],
-      queryFn: () => fetchUserById(id),
-      staleTime: 1000 * 60 * 2,
-    }),
-};
-
-export const userMutations = {
-  follow: (queryClient: QueryClient) =>
-    mutationOptions({
-      mutationFn: (userId: string) => followUser(userId),
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["users"] });
-      },
-    }),
-};
+  return NextResponse.json({
+    data: paginatedJobs,
+    total: jobList.length,
+  });
+}
 ```
 
 **規則：**
 
-- `staleTime` 必須明確設定，禁止依賴預設值（0）
-- Query key 遵循陣列層級結構，從最寬泛到最具體
-- Mutation 的 `onSuccess` / `onError` 邏輯放在 `queryOptions` 定義處，不在元件內
+- Route Handler 直接讀 `data/*`
+- `page.tsx` 與其他 RSC 透過 `get***` helper 呼叫 API，不直接讀 `data/*`
+- 需要快取的靜態參考資料，統一在 `lib/api/*.server.ts` 處理 `cache` / `revalidate`
 
-### 6.3 Hydration（Server → Client 資料橋接）
+### 6.3 Client 互動資料規範
 
-```typescript
-// app/users/page.tsx（Server Component）
-import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
-import { getQueryClient } from '@/lib/queries/queryClient';
-import { userQueries } from '@/lib/queries/users';
-import { UserList } from '@/components/common/users/UserList';
-
-export default async function UsersPage() {
-  const queryClient = getQueryClient();
-
-  await queryClient.prefetchQuery(userQueries.all());
-
-  return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <UserList />
-    </HydrationBoundary>
-  );
-}
-```
+Client Component 若需要互動導頁，優先使用 URL state（`searchParams`）與 `router.push/replace`，避免在 client 端自行重建主要列表資料流。
 
 ---
 
@@ -540,49 +553,52 @@ const HeavyChart = dynamic(() => import('@/components/common/HeavyChart'), {
 
 ### 10.1 測試分層策略
 
+本專案目前尚未建立 `tests/` 與對應測試工具鏈。後續若補測試，建議採以下分層：
+
 ```
 ┌─────────────────────────────────────────┐
 │  Playwright (E2E)                        │
-│  - 完整使用者流程                         │
-│  - Server Components 渲染驗證             │
+│  - 首頁完整流程                          │
 │  - API Route Handlers                    │
+│  - Server Components SSR 驗證            │
 ├─────────────────────────────────────────┤
 │  Vitest + RTL (Integration)             │
 │  - Client Components 互動               │
-│  - Custom Hooks                         │
-│  - TanStack Query 整合                  │
+│  - Dialog / Carousel / Filter 行為      │
 ├─────────────────────────────────────────┤
 │  Vitest (Unit)                          │
 │  - 純函式（utils、formatters）           │
-│  - Zod schemas                          │
-│  - Query key factories                  │
+│  - search params helpers                │
 └─────────────────────────────────────────┘
 ```
 
 ### 10.2 Vitest + RTL 規範（Client 端）
 
-**適用對象**：Client Components、自定義 Hooks、純函式
+**適用對象**：Client Components、純函式
 
 ```typescript
-// tests/integration/UserActions.test.tsx
+// tests/integration/JobFilters.test.tsx
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 
-import { createTestQueryClient } from '@/tests/utils/queryClient';
-import { UserActions } from '@/components/common/users/UserActions';
-
 // ✅ 使用專案統一的 render wrapper
 import { renderWithProviders } from '@/tests/utils/renderWithProviders';
+import { JobFilters } from '@/components/home/JobFilters';
 
-describe('UserActions', () => {
-  it('should call follow mutation on button click', async () => {
+describe('JobFilters', () => {
+  it('should trigger search on button click', async () => {
     const user = userEvent.setup();
-    const mockUser = { id: '1', name: 'Test User' };
 
-    renderWithProviders(<UserActions user={mockUser} />);
+    renderWithProviders(
+      <JobFilters
+        educationLevels={[]}
+        initialCompanyName=""
+        salaryLevels={[]}
+      />,
+    );
 
-    await user.click(screen.getByRole('button', { name: /follow/i }));
+    await user.click(screen.getByRole('button', { name: /條件搜尋/i }));
 
     await waitFor(() => {
       expect(screen.getByRole('button')).not.toBeDisabled();
@@ -595,25 +611,18 @@ describe('UserActions', () => {
 
 ```typescript
 // tests/utils/renderWithProviders.tsx
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactNode } from 'react';
 import { render } from '@testing-library/react';
+
+interface RenderWithProvidersOptions {
+  wrapper?: ({ children }: { children: ReactNode }) => ReactNode;
+}
 
 export function renderWithProviders(
   ui: React.ReactElement,
-  { queryClient = createTestQueryClient() } = {},
+  options: RenderWithProvidersOptions = {},
 ) {
-  return render(
-    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
-  );
-}
-
-export function createTestQueryClient() {
-  return new QueryClient({
-    defaultOptions: {
-      queries: { retry: false, gcTime: Infinity },
-      mutations: { retry: false },
-    },
-  });
+  return render(ui, options);
 }
 ```
 
@@ -629,38 +638,43 @@ export function createTestQueryClient() {
 **適用對象**：完整頁面流程、Server Component 輸出、API Routes、SEO meta tags
 
 ```typescript
-// tests/e2e/users.spec.ts
-import { test, expect } from "@playwright/test";
+// tests/e2e/home.spec.ts
+import { test, expect } from '@playwright/test';
 
-test.describe("Users page", () => {
-  test("should render user list from server", async ({ page }) => {
-    await page.goto("/users");
+test.describe('Home page', () => {
+  test('should render job list from server', async ({ page }) => {
+    await page.goto('/');
 
     // 驗證 Server Component 渲染的靜態內容
-    await expect(page.getByRole("heading", { name: /users/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /適合前端工程師的好工作/i }),
+    ).toBeVisible();
 
     // 驗證 SSR：確認 HTML 在 JS 執行前已包含內容
     const content = await page.content();
-    expect(content).toContain("user-list");
+    expect(content).toContain('查看細節');
   });
 
-  test("should complete follow user flow", async ({ page }) => {
-    await page.goto("/users/1");
-    await page.getByRole("button", { name: /follow/i }).click();
+  test('should open detail dialog', async ({ page }) => {
+    await page.goto('/');
+    await page
+      .getByRole('button', { name: /查看細節/i })
+      .first()
+      .click();
 
     await expect(
-      page.getByRole("button", { name: /following/i }),
+      page.getByRole('heading', { name: /詳細資訊/i }),
     ).toBeVisible();
   });
 
-  test("should have correct meta tags for SEO", async ({ page }) => {
-    await page.goto("/users/1");
+  test('should have correct meta tags for SEO', async ({ page }) => {
+    await page.goto('/');
 
     const title = await page.title();
-    expect(title).toMatch(/user profile/i);
+    expect(title).toMatch(/web-exam-v2/i);
 
     const ogImage = page.locator('meta[property="og:image"]');
-    await expect(ogImage).toHaveAttribute("content", /.+/);
+    await expect(ogImage).toHaveAttribute('content', /.+/);
   });
 });
 ```
@@ -697,8 +711,8 @@ CI pipeline 中，覆蓋率低於門檻時**禁止 merge**。
 ```typescript
 // ✅ 正確：使用 unknown + type guard
 function processData(data: unknown): string {
-  if (typeof data !== "string") {
-    throw new TypeError("Expected string");
+  if (typeof data !== 'string') {
+    throw new TypeError('Expected string');
   }
   return data.trim();
 }
@@ -716,20 +730,18 @@ const config = {
 
 以下行為在 Code Review 中**一律拒絕 merge**：
 
-| #   | 禁止行為                                                | 原因                 |
-| --- | ------------------------------------------------------- | -------------------- |
-| 1   | 在 Server Component 使用 `useState` / `useEffect`       | 破壞 RSC 架構        |
-| 2   | 在 Client Component 直接 `fetch`（繞過 TanStack Query） | 破壞快取一致性       |
-| 3   | 使用 `any` 型別                                         | 破壞型別安全         |
-| 4   | Inline style（動態值除外）                              | 違反 Tailwind 規範   |
-| 5   | 直接修改 `components/ui/` 原始檔                        | 破壞 shadcn 升級路徑 |
-| 6   | 在 LCP 元素上省略 `priority` prop                       | 破壞 LCP 指標        |
-| 7   | 圖片省略 `width` / `height`                             | 造成 CLS             |
-| 8   | 不尊重 `prefers-reduced-motion` 的動畫                  | 可及性違規           |
-| 9   | 測試中使用 `fireEvent`                                  | 不符合真實使用者行為 |
-| 10  | 測試中使用 CSS selector 或 `data-testid` 作為主要查詢   | 脆弱測試             |
-| 11  | `queryKey` 使用字串而非陣列                             | TanStack Query 規範  |
-| 12  | `staleTime` 未明確設定                                  | 效能問題             |
+| #   | 禁止行為                                              | 原因                 |
+| --- | ----------------------------------------------------- | -------------------- |
+| 1   | 在 Server Component 使用 `useState` / `useEffect`     | 破壞 RSC 架構        |
+| 2   | 在 Client Component 直接 `fetch` 主要列表資料         | 破壞 RSC 資料流      |
+| 3   | 使用 `any` 型別                                       | 破壞型別安全         |
+| 4   | Inline style（動態值除外）                            | 違反 Tailwind 規範   |
+| 5   | 直接修改 `components/ui/` 原始檔                      | 破壞 shadcn 升級路徑 |
+| 6   | 在 LCP 元素上省略 `priority` prop                     | 破壞 LCP 指標        |
+| 7   | 圖片省略 `width` / `height`                           | 造成 CLS             |
+| 8   | 不尊重 `prefers-reduced-motion` 的動畫                | 可及性違規           |
+| 9   | 測試中使用 `fireEvent`                                | 不符合真實使用者行為 |
+| 10  | 測試中使用 CSS selector 或 `data-testid` 作為主要查詢 | 脆弱測試             |
 
 ---
 

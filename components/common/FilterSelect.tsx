@@ -1,6 +1,6 @@
 'use client';
 
-import { SelectCaretIcon } from '@/components/common/icons/OutlineIcons';
+import { SelectCaretIcon } from '@/components/icons/OutlineIcons';
 import {
   Select,
   SelectContent,

@@ -1,12 +1,12 @@
 import { Suspense } from 'react';
 
-import { DetailDialogController } from '@/components/common/DetailDialogController';
-import { HeroSection } from '@/components/common/HeroSection';
-import { JobFilters } from '@/components/common/JobFilters';
+import { DetailDialogController } from '@/components/home/DetailDialogController';
+import { HeroSection } from '@/components/home/HeroSection';
+import { JobFilters } from '@/components/home/JobFilters';
 import {
   JobResultsSection,
   JobResultsSectionSkeleton,
-} from '@/components/common/JobResultsSection';
+} from '@/components/home/JobResultsSection';
 import { type JobSearchState } from '@/lib/utils/jobSearchParams';
 import type { EducationItem, JobDetail, SalaryItem } from '@/types/api';
 

@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { DetailDialog } from '@/components/common/DetailDialog';
+import { DetailDialog } from '@/components/home/DetailDialog';
 import { createJobSearchParams } from '@/lib/utils/jobSearchParams';
 import type { JobDetail } from '@/types/api';
 

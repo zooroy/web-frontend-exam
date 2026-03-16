@@ -1,7 +1,5 @@
 import localFont from 'next/font/local';
 
-import { QueryProvider } from '@/components/common/QueryProvider';
-
 import type { Metadata } from 'next';
 
 import './globals.css';
@@ -34,9 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-Hant" className={notoSansTc.className}>
-      <body>
-        <QueryProvider>{children}</QueryProvider>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

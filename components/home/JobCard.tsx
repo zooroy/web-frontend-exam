@@ -4,7 +4,7 @@ import {
   BookOutlineIcon,
   PersonOutlineIcon,
   SalaryOutlineIcon,
-} from '@/components/common/icons/OutlineIcons';
+} from '@/components/icons/OutlineIcons';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { JobListItem } from '@/types/api';

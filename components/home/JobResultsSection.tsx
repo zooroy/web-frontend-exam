@@ -1,5 +1,5 @@
-import { JobCard } from '@/components/common/JobCard';
-import { Pagination } from '@/components/common/Pagination';
+import { JobCard } from '@/components/home/JobCard';
+import { Pagination } from '@/components/home/Pagination';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getJobList } from '@/lib/api/jobs.server';

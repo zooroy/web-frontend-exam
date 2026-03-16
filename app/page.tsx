@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 
-import { HomePageShell } from '@/components/common/HomePageShell';
+import { HomePageShell } from '@/components/home/HomePageShell';
 import {
   getEducationList,
   getJobDetail,
