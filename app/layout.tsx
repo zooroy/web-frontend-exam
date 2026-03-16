@@ -21,7 +21,7 @@ const notoSansTc = localFont({
 });
 
 export const metadata: Metadata = {
-  title: 'HeeLoo Jobs',
+  title: 'Hello Jobs',
   description: '適合前端工程師的好工作',
 };
 
