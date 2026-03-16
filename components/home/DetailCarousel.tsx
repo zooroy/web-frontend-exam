@@ -1,5 +1,6 @@
 'use client';
 
+import { useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
@@ -41,9 +42,9 @@ export function DetailCarousel({
   const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
   const [isHovered, setIsHovered] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
-  const [snapCount, setSnapCount] = useState(1);
-  const dotIndexes = Array.from({ length: snapCount }, (_, index) => index);
+  const dotIndexes = Array.from({ length: images.length }, (_, index) => index);
   const isLoading = loading || images.length === 0;
+  const clampedActivePage = Math.max(0, Math.min(activePage, images.length - 1));
 
   useEffect(() => {
     if (!api) {
@@ -54,7 +55,6 @@ export function DetailCarousel({
 
     function handleSelect() {
       setActivePage(currentApi.selectedScrollSnap());
-      setSnapCount(currentApi.scrollSnapList().length);
     }
 
     handleSelect();
@@ -84,7 +84,7 @@ export function DetailCarousel({
   }, [api, imageDimensions, images.length]);
 
   useEffect(() => {
-    if (!api || snapCount <= 1 || isHovered || isInteracting) {
+    if (!api || images.length <= 1 || isHovered || isInteracting || isLoading) {
       return undefined;
     }
 
@@ -95,7 +95,7 @@ export function DetailCarousel({
     return function cleanup() {
       window.clearInterval(intervalId);
     };
-  }, [api, isHovered, isInteracting, snapCount]);
+  }, [api, images.length, isHovered, isInteracting, isLoading]);
 
   useEffect(() => {
     if (!api) {
@@ -183,7 +183,9 @@ export function DetailCarousel({
                 imageDimensions={imageDimensions[image]}
                 index={index}
                 isLoaded={loadedImages[image]}
-                isVisible={Math.abs(index - activePage) <= VISIBLE_IMAGE_RADIUS}
+                isVisible={
+                  Math.abs(index - clampedActivePage) <= VISIBLE_IMAGE_RADIUS
+                }
                 onImageLoad={handleImageLoad}
                 onLoadStateChange={(nextLoaded) => {
                   if (!nextLoaded) {
@@ -205,10 +207,12 @@ export function DetailCarousel({
           <button
             key={dotIndex}
             aria-label={`前往第 ${dotIndex + 1} 組圖片`}
-            aria-pressed={dotIndex === activePage}
+            aria-pressed={dotIndex === clampedActivePage}
             className={cn(
               'rounded-full bg-[var(--color-gray-500)] transition-all duration-200',
-              dotIndex === activePage ? 'h-[6px] w-6 bg-primary' : 'size-[6px]',
+              dotIndex === clampedActivePage
+                ? 'h-[6px] w-6 bg-primary'
+                : 'size-[6px]',
             )}
             type="button"
             onClick={() => {
@@ -264,6 +268,7 @@ function CarouselSlide({
   onImageLoad,
   onLoadStateChange,
 }: CarouselSlideProps) {
+  const shouldReduceMotion = useReducedMotion();
   const fallbackHeight = imageDimensions?.height ?? IMAGE_FALLBACK_HEIGHT;
   const fallbackWidth = imageDimensions?.width ?? IMAGE_FALLBACK_WIDTH;
 
@@ -285,7 +290,10 @@ function CarouselSlide({
       {!isLoaded ? (
         <Skeleton
           aria-hidden="true"
-          className="rounded-none"
+          className={cn(
+            'rounded-none transition-opacity duration-250 ease-out',
+            isLoaded ? 'opacity-0' : 'opacity-100',
+          )}
           style={{
             height: fallbackHeight,
             width: fallbackWidth,
@@ -295,8 +303,13 @@ function CarouselSlide({
       <Image
         alt={`工作圖片 ${index + 1}`}
         className={cn(
-          'h-auto w-auto max-w-none transition-opacity duration-200',
-          isLoaded ? 'opacity-100' : 'absolute inset-0 opacity-0',
+          'h-auto w-auto max-w-none transition-[opacity,transform,filter] duration-300 ease-out',
+          isLoaded
+            ? 'opacity-100 blur-0 scale-100'
+            : cn(
+                'absolute inset-0 opacity-0',
+                shouldReduceMotion ? 'scale-100 blur-0' : 'scale-[1.02] blur-[2px]',
+              ),
         )}
         draggable={false}
         height={fallbackHeight}

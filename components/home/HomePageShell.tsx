@@ -27,14 +27,6 @@ export function HomePageShell({
   salaryLevels,
   searchState,
 }: HomePageShellProps) {
-  const jobResultsSuspenseKey = [
-    initialMode,
-    searchState.companyName,
-    searchState.educationLevel,
-    searchState.salaryLevel,
-    searchState.page,
-  ].join(':');
-
   return (
     <div className="min-h-screen  bg-[linear-gradient(90deg,var(--color-gray-700)_0%,var(--color-gray-1000)_100%)]">
       <HeroSection />
@@ -58,10 +50,7 @@ export function HomePageShell({
                 salaryLevels={salaryLevels}
               />
             </div>
-            <Suspense
-              key={jobResultsSuspenseKey}
-              fallback={<JobResultsSectionSkeleton initialMode={initialMode} />}
-            >
+            <Suspense fallback={<JobResultsSectionSkeleton initialMode={initialMode} />}>
               {/* <JobResultsSectionSkeleton initialMode={initialMode} /> */}
               <JobResultsSection
                 educationLevels={educationLevels}

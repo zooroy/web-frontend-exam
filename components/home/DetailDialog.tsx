@@ -1,5 +1,6 @@
 'use client';
 
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 
@@ -45,6 +46,11 @@ interface DetailDialogProps {
   pending?: boolean;
 }
 
+interface DetailContentSectionProps {
+  children: React.ReactNode;
+  delay?: number;
+}
+
 function JobDescriptionFallback() {
   return (
     <div className="flex flex-col gap-3">
@@ -62,6 +68,32 @@ function JobHeaderFallback() {
       <Skeleton className="h-6 w-40 rounded bg-[var(--color-gray-300)] sm:h-7 sm:w-52" />
       <Skeleton className="h-4 w-32 rounded bg-[var(--color-gray-300)] sm:h-5 sm:w-40" />
     </div>
+  );
+}
+
+function DetailContentSection({
+  children,
+  delay = 0,
+}: DetailContentSectionProps) {
+  const shouldReduceMotion = useReducedMotion();
+
+  return (
+    <motion.div
+      initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={shouldReduceMotion ? undefined : { opacity: 0, y: -6 }}
+      transition={
+        shouldReduceMotion
+          ? { duration: 0 }
+          : {
+              duration: 0.22,
+              ease: 'easeOut',
+              delay,
+            }
+      }
+    >
+      {children}
+    </motion.div>
   );
 }
 
@@ -103,29 +135,54 @@ export function DetailDialog({
             aria-busy={pending}
             className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-4 sm:gap-[18px] sm:px-6 sm:py-5"
           >
-            {job ? (
-              <div className="flex flex-wrap flex-col gap-x-2 gap-y-1 sm:flex-row sm:items-center">
-                <span className="body4 font-bold text-foreground sm:body5">
-                  {job.companyName}
-                </span>
-                <span className="body2 font-normal text-foreground sm:body4">
-                  {job.jobTitle}
-                </span>
-              </div>
-            ) : (
-              <JobHeaderFallback />
-            )}
-            <DetailCarousel images={job?.companyPhoto} loading={!job} />
+            <AnimatePresence initial={false} mode="wait">
+              {job ? (
+                <DetailContentSection key={`detail-header-${job.id}`}>
+                  <div className="flex flex-wrap flex-col gap-x-2 gap-y-1 sm:flex-row sm:items-center">
+                    <span className="body4 font-bold text-foreground sm:body5">
+                      {job.companyName}
+                    </span>
+                    <span className="body2 font-normal text-foreground sm:body4">
+                      {job.jobTitle}
+                    </span>
+                  </div>
+                </DetailContentSection>
+              ) : (
+                <div key="detail-header-fallback">
+                  <JobHeaderFallback />
+                </div>
+              )}
+            </AnimatePresence>
+            <AnimatePresence initial={false} mode="wait">
+              {job ? (
+                <DetailContentSection key={`detail-carousel-${job.id}`} delay={0.04}>
+                  <DetailCarousel images={job.companyPhoto} loading={false} />
+                </DetailContentSection>
+              ) : (
+                <div key="detail-carousel-fallback">
+                  <DetailCarousel images={undefined} loading />
+                </div>
+              )}
+            </AnimatePresence>
             <div className="flex flex-col gap-2 sm:gap-2">
               <h3 className="body3 font-bold text-foreground sm:body4">
                 工作內容
               </h3>
               <div className="body3 font-normal leading-[1.25] text-[var(--color-gray-800)] [&_a]:font-bold [&_a]:text-primary [&_a]:underline [&_h1]:body4 [&_h1]:font-bold [&_h2]:body3 [&_h2]:mt-5 [&_h2]:font-bold [&_li]:ml-5 [&_li]:list-disc [&_p]:mt-4">
-                {job ? (
-                  <JobDescription description={job.description} />
-                ) : (
-                  <JobDescriptionFallback />
-                )}
+                <AnimatePresence initial={false} mode="wait">
+                  {job ? (
+                    <DetailContentSection
+                      key={`detail-description-${job.id}`}
+                      delay={0.08}
+                    >
+                      <JobDescription description={job.description} />
+                    </DetailContentSection>
+                  ) : (
+                    <div key="detail-description-fallback">
+                      <JobDescriptionFallback />
+                    </div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </div>
