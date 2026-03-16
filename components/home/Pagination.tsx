@@ -3,7 +3,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useMemo, useTransition } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -145,7 +145,7 @@ function PaginationEllipsis() {
 function renderPaginationItems(
   items: PaginationItem[],
   currentPage: number,
-  isLocked: boolean,
+  isPending: boolean,
   onNavigate: (href: string) => void,
   pageHrefs: string[],
 ) {
@@ -157,7 +157,7 @@ function renderPaginationItems(
     return (
       <PaginationPageLink
         key={`pagination-slot-${index + 1}`}
-        disabled={isLocked || currentPage === item}
+        disabled={isPending || currentPage === item}
         href={getPageHref(pageHrefs, item)}
         isCurrent={currentPage === item}
         label={item}
@@ -173,7 +173,7 @@ export function Pagination({
   totalPages,
 }: PaginationProps) {
   const router = useRouter();
-  const [isLocked, setIsLocked] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const desktopItems = useMemo(
     () => Array.from({ length: totalPages }, (_, index) => index + 1),
     [totalPages],
@@ -184,32 +184,30 @@ export function Pagination({
   );
 
   function handleNavigate(href: string) {
-    setIsLocked(true);
-    router.push(href, { scroll: false });
-    window.setTimeout(() => {
-      setIsLocked(false);
-    }, 800);
+    startTransition(() => {
+      router.push(href, { scroll: false });
+    });
   }
 
   return (
-    <nav aria-label="工作列表分頁" className="mt-auto">
+    <nav aria-busy={isPending} aria-label="工作列表分頁" className="mt-auto">
       <div className="hidden items-center justify-center gap-[18px] sm:flex">
         <PaginationArrowLink
           direction="prev"
-          disabled={isLocked || currentPage === 1}
+          disabled={isPending || currentPage === 1}
           href={getPageHref(pageHrefs, Math.max(currentPage - 1, 1))}
           onNavigate={handleNavigate}
         />
         {renderPaginationItems(
           desktopItems,
           currentPage,
-          isLocked,
+          isPending,
           handleNavigate,
           pageHrefs,
         )}
         <PaginationArrowLink
           direction="next"
-          disabled={isLocked || currentPage === totalPages}
+          disabled={isPending || currentPage === totalPages}
           href={getPageHref(pageHrefs, Math.min(currentPage + 1, totalPages))}
           onNavigate={handleNavigate}
         />
@@ -217,20 +215,20 @@ export function Pagination({
       <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 sm:hidden">
         <PaginationArrowLink
           direction="prev"
-          disabled={isLocked || currentPage === 1}
+          disabled={isPending || currentPage === 1}
           href={getPageHref(pageHrefs, Math.max(currentPage - 1, 1))}
           onNavigate={handleNavigate}
         />
         {renderPaginationItems(
           mobileItems,
           currentPage,
-          isLocked,
+          isPending,
           handleNavigate,
           pageHrefs,
         )}
         <PaginationArrowLink
           direction="next"
-          disabled={isLocked || currentPage === totalPages}
+          disabled={isPending || currentPage === totalPages}
           href={getPageHref(pageHrefs, Math.min(currentPage + 1, totalPages))}
           onNavigate={handleNavigate}
         />

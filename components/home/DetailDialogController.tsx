@@ -1,15 +1,17 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 
 import { DetailDialog } from '@/components/home/DetailDialog';
+import { DETAIL_DIALOG_OPEN_EVENT } from '@/components/home/DetailTriggerLink';
 import { createJobSearchParams } from '@/lib/utils/jobSearchParams';
 import type { JobDetail } from '@/types/api';
 
 interface DetailDialogControllerProps {
   companyName: string;
   educationLevel?: number;
+  detailId?: number;
   job: JobDetail | null;
   open: boolean;
   page: number;
@@ -19,6 +21,7 @@ interface DetailDialogControllerProps {
 export function DetailDialogController({
   companyName,
   educationLevel,
+  detailId,
   job,
   open,
   page,
@@ -26,21 +29,46 @@ export function DetailDialogController({
 }: DetailDialogControllerProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [displayJob, setDisplayJob] = useState<JobDetail | null>(job);
+  const [isPending, startTransition] = useTransition();
+  const [pendingDetailId, setPendingDetailId] = useState<number | undefined>(
+    detailId,
+  );
+  const activeDetailId = detailId ?? pendingDetailId;
+  const isDialogOpen = typeof activeDetailId === 'number';
+  const displayJob =
+    isDialogOpen && job?.id === activeDetailId && typeof detailId === 'number'
+      ? job
+      : null;
 
   useEffect(() => {
-    if (!open || !job) {
+    function handlePendingOpen(event: Event) {
+      const customEvent = event as CustomEvent<{ detailId?: number }>;
+
+      if (typeof customEvent.detail?.detailId === 'number') {
+        setPendingDetailId(customEvent.detail.detailId);
+      }
+    }
+
+    window.addEventListener(DETAIL_DIALOG_OPEN_EVENT, handlePendingOpen);
+
+    return function cleanup() {
+      window.removeEventListener(DETAIL_DIALOG_OPEN_EVENT, handlePendingOpen);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof detailId === 'number' || open) {
       return undefined;
     }
 
     const timeoutId = window.setTimeout(() => {
-      setDisplayJob(job);
+      setPendingDetailId(undefined);
     }, 0);
 
     return function cleanup() {
       window.clearTimeout(timeoutId);
     };
-  }, [job, open]);
+  }, [detailId, open]);
 
   function handleClose() {
     const searchParams = createJobSearchParams({
@@ -51,10 +79,21 @@ export function DetailDialogController({
     });
     const search = searchParams.toString();
 
-    router.replace(search ? `${pathname}?${search}` : pathname, {
-      scroll: false,
+    setPendingDetailId(undefined);
+
+    startTransition(() => {
+      router.replace(search ? `${pathname}?${search}` : pathname, {
+        scroll: false,
+      });
     });
   }
 
-  return <DetailDialog job={displayJob} open={open} onClose={handleClose} />;
+  return (
+    <DetailDialog
+      job={displayJob}
+      open={isDialogOpen}
+      pending={isPending || (isDialogOpen && displayJob === null)}
+      onClose={handleClose}
+    />
+  );
 }

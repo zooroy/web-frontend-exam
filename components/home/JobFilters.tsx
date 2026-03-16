@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 
 import { BrandButton } from '@/components/common/BrandButton';
 import { FilterSelect } from '@/components/common/FilterSelect';
@@ -26,6 +26,7 @@ export function JobFilters({
 }: JobFiltersProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [companyName, setCompanyName] = useState(initialCompanyName);
   const [educationLevel, setEducationLevel] = useState(
     initialEducationLevel ? String(initialEducationLevel) : '',
@@ -43,8 +44,10 @@ export function JobFilters({
     });
     const search = searchParams.toString();
 
-    router.push(search ? `${pathname}?${search}` : pathname, {
-      scroll: false,
+    startTransition(() => {
+      router.push(search ? `${pathname}?${search}` : pathname, {
+        scroll: false,
+      });
     });
   }
 
@@ -84,8 +87,12 @@ export function JobFilters({
           }))}
         />
       </div>
-      <BrandButton className="w-[109px] shrink-0 px-0" onClick={handleSearch}>
-        條件搜尋
+      <BrandButton
+        className="w-[109px] shrink-0 px-0"
+        disabled={isPending}
+        onClick={handleSearch}
+      >
+        {isPending ? '搜尋中' : '條件搜尋'}
       </BrandButton>
     </div>
   );

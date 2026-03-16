@@ -76,6 +76,7 @@ export function HomePageShell({
       </main>
       <DetailDialogController
         companyName={searchState.companyName}
+        detailId={searchState.detailId}
         educationLevel={searchState.educationLevel}
         job={detailJob}
         open={Boolean(searchState.detailId)}

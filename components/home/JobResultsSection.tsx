@@ -83,6 +83,7 @@ export async function JobResultsSection({
               detailHref={buildHref(searchState, {
                 detailId: job.id,
               })}
+              detailId={job.id}
               job={job}
               educationLabel={educationMap.get(job.educationId) ?? '未提供'}
               salaryLabel={salaryMap.get(job.salaryId) ?? '未提供'}

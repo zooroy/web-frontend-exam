@@ -1,5 +1,4 @@
-import Link from 'next/link';
-
+import { DetailTriggerLink } from '@/components/home/DetailTriggerLink';
 import {
   BookOutlineIcon,
   PersonOutlineIcon,
@@ -11,6 +10,7 @@ import type { JobListItem } from '@/types/api';
 
 interface JobCardProps {
   detailHref: string;
+  detailId: number;
   educationLabel: string;
   job: JobListItem;
   salaryLabel: string;
@@ -33,6 +33,7 @@ function InformationRow({ children, icon: Icon }: InformationRowProps) {
 
 export function JobCard({
   detailHref,
+  detailId,
   educationLabel,
   job,
   salaryLabel,
@@ -66,13 +67,13 @@ export function JobCard({
         </p>
       </CardContent>
       <CardFooter className="justify-center rounded-none border-0 bg-background px-0 py-0">
-        <Link
+        <DetailTriggerLink
+          detailId={detailId}
           href={detailHref}
-          scroll={false}
           className="body2 font-bold text-primary transition-colors hover:text-accent"
         >
           查看細節
-        </Link>
+        </DetailTriggerLink>
       </CardFooter>
     </Card>
   );

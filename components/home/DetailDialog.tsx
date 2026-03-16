@@ -12,6 +12,7 @@ import {
   DialogPortal,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import type { JobDetail } from '@/types/api';
 
@@ -41,15 +42,16 @@ interface DetailDialogProps {
   job: JobDetail | null;
   onClose: () => void;
   open: boolean;
+  pending?: boolean;
 }
 
 function DetailCarouselFallback() {
   return (
     <div className="flex flex-col gap-[10px]">
-      <div className="h-[150px] w-full animate-pulse bg-[var(--color-gray-300)]" />
+      <Skeleton className="h-[150px] w-full rounded-none bg-[var(--color-gray-300)]" />
       <div className="flex justify-center gap-2">
         {Array.from({ length: 3 }, (_, index) => (
-          <div
+          <Skeleton
             key={index + 1}
             className={cn(
               'rounded-full bg-[var(--color-gray-500)]',
@@ -65,15 +67,29 @@ function DetailCarouselFallback() {
 function JobDescriptionFallback() {
   return (
     <div className="flex flex-col gap-3">
-      <div className="h-4 w-full animate-pulse bg-[var(--color-gray-300)]" />
-      <div className="h-4 w-11/12 animate-pulse bg-[var(--color-gray-300)]" />
-      <div className="h-4 w-10/12 animate-pulse bg-[var(--color-gray-300)]" />
-      <div className="h-4 w-4/5 animate-pulse bg-[var(--color-gray-300)]" />
+      <Skeleton className="h-4 w-full rounded-none bg-[var(--color-gray-300)]" />
+      <Skeleton className="h-4 w-11/12 rounded-none bg-[var(--color-gray-300)]" />
+      <Skeleton className="h-4 w-10/12 rounded-none bg-[var(--color-gray-300)]" />
+      <Skeleton className="h-4 w-4/5 rounded-none bg-[var(--color-gray-300)]" />
     </div>
   );
 }
 
-export function DetailDialog({ job, onClose, open }: DetailDialogProps) {
+function JobHeaderFallback() {
+  return (
+    <div className="flex flex-col gap-2">
+      <Skeleton className="h-6 w-40 rounded bg-[var(--color-gray-300)] sm:h-7 sm:w-52" />
+      <Skeleton className="h-4 w-32 rounded bg-[var(--color-gray-300)] sm:h-5 sm:w-40" />
+    </div>
+  );
+}
+
+export function DetailDialog({
+  job,
+  onClose,
+  open,
+  pending = false,
+}: DetailDialogProps) {
   return (
     <Dialog
       open={open}
@@ -87,7 +103,7 @@ export function DetailDialog({ job, onClose, open }: DetailDialogProps) {
         <DialogOverlay className="!bg-overlay backdrop-blur-none supports-backdrop-filter:backdrop-blur-none" />
         <DialogPrimitive.Content
           className={cn(
-            'fixed top-1/2 left-1/2 z-50 flex w-[min(750px,calc(100vw-44px))] max-w-none -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-[4px] bg-background shadow-[var(--shadow-modal)] outline-none',
+            'fixed top-1/2 left-1/2 z-50 flex max-h-[min(768px,calc(100vh-44px))] w-[min(750px,calc(100vw-44px))] max-w-none -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-[4px] bg-background shadow-[var(--shadow-modal)] outline-none',
             'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
           )}
         >
@@ -96,17 +112,22 @@ export function DetailDialog({ job, onClose, open }: DetailDialogProps) {
               詳細資訊
             </DialogTitle>
           </DialogHeader>
-          <div className="flex max-h-[min(768px,calc(100vh-120px))] flex-col gap-3 overflow-y-auto px-4 py-4 sm:gap-[18px] sm:px-6 sm:py-5">
-            <div className="flex flex-wrap flex-col gap-x-2 gap-y-1 sm:flex-row sm:items-center">
-              <span className="body4 font-bold text-foreground sm:body5">
-                {job?.companyName ?? '未提供公司名稱'}
-              </span>
-              {job?.jobTitle ? (
+          <div
+            aria-busy={pending}
+            className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-4 sm:gap-[18px] sm:px-6 sm:py-5"
+          >
+            {job ? (
+              <div className="flex flex-wrap flex-col gap-x-2 gap-y-1 sm:flex-row sm:items-center">
+                <span className="body4 font-bold text-foreground sm:body5">
+                  {job.companyName}
+                </span>
                 <span className="body2 font-normal text-foreground sm:body4">
                   {job.jobTitle}
                 </span>
-              ) : null}
-            </div>
+              </div>
+            ) : (
+              <JobHeaderFallback />
+            )}
             {open && job ? (
               <DetailCarousel images={job.companyPhoto} />
             ) : (

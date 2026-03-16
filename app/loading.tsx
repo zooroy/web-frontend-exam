@@ -1,18 +1,20 @@
+import { Skeleton } from '@/components/ui/skeleton';
+
 function LoadingCardSkeleton() {
   return (
     <div className="flex min-h-[218px] flex-col gap-[10px] rounded-[6px] border border-[var(--color-gray-500)] bg-background px-4 py-4">
-      <div className="h-8 w-28 animate-pulse rounded bg-[var(--color-gray-300)] sm:h-10 sm:w-36" />
+      <Skeleton className="h-8 w-28 rounded sm:h-10 sm:w-36" />
       <div className="grid gap-2">
-        <div className="h-[18px] w-40 animate-pulse rounded bg-[var(--color-gray-300)]" />
-        <div className="h-[18px] w-20 animate-pulse rounded bg-[var(--color-gray-300)]" />
-        <div className="h-[18px] w-32 animate-pulse rounded bg-[var(--color-gray-300)]" />
+        <Skeleton className="h-[18px] w-40 rounded" />
+        <Skeleton className="h-[18px] w-20 rounded" />
+        <Skeleton className="h-[18px] w-32 rounded" />
       </div>
       <div className="mt-1 grid gap-2">
-        <div className="h-4 w-full animate-pulse rounded bg-[var(--color-gray-300)]" />
-        <div className="h-4 w-5/6 animate-pulse rounded bg-[var(--color-gray-300)]" />
+        <Skeleton className="h-4 w-full rounded" />
+        <Skeleton className="h-4 w-5/6 rounded" />
       </div>
       <div className="mt-auto flex justify-center">
-        <div className="h-5 w-20 animate-pulse rounded bg-[var(--color-gray-300)]" />
+        <Skeleton className="h-5 w-20 rounded" />
       </div>
     </div>
   );
@@ -24,9 +26,9 @@ export default function Loading() {
       <section className="relative overflow-hidden bg-[linear-gradient(180deg,var(--color-gray-700)_0%,var(--color-gray-1000)_100%)]">
         <div className="mx-auto flex min-h-[260px] max-w-[1440px] items-end px-3 pt-4 sm:min-h-[823px] sm:px-0 sm:pt-0">
           <div className="relative h-[220px] w-full sm:h-[823px]">
-            <div className="absolute inset-0 animate-pulse bg-[var(--color-gray-1000)]/35" />
-            <div className="absolute inset-y-0 left-0 w-[76.18%] animate-pulse bg-[var(--color-gray-300)]/25" />
-            <div className="absolute right-[4%] bottom-[13%] h-[92px] w-[42%] max-w-[240px] animate-pulse rounded-[12px] bg-[var(--color-gray-300)]/45 sm:right-[3.4%] sm:bottom-[16.4%] sm:h-[180px] sm:w-[37.5%] sm:max-w-[540px]" />
+            <Skeleton className="absolute inset-0 rounded-none bg-[var(--color-gray-1000)]/35" />
+            <Skeleton className="absolute inset-y-0 left-0 w-[76.18%] rounded-none bg-[var(--color-gray-300)]/25" />
+            <Skeleton className="absolute right-[4%] bottom-[13%] h-[92px] w-[42%] max-w-[240px] rounded-[12px] bg-[var(--color-gray-300)]/45 sm:right-[3.4%] sm:bottom-[16.4%] sm:h-[180px] sm:w-[37.5%] sm:max-w-[540px]" />
           </div>
         </div>
       </section>
@@ -35,13 +37,13 @@ export default function Loading() {
           <div className="flex flex-1 flex-col gap-5 sm:gap-6">
             <div className="flex items-center gap-3">
               <div className="h-4 w-1 rounded-[4px] bg-primary" />
-              <div className="h-8 w-48 animate-pulse rounded bg-[var(--color-gray-300)] sm:h-10 sm:w-72" />
+              <Skeleton className="h-8 w-48 rounded sm:h-10 sm:w-72" />
             </div>
             <div className="hidden items-end gap-[18px] sm:grid sm:grid-cols-2 lg:grid-cols-[minmax(0,1.33fr)_minmax(0,1fr)_minmax(0,1fr)_104px]">
-              <div className="h-[56px] animate-pulse rounded-[4px] border border-[var(--color-gray-500)] bg-[var(--color-gray-100)]" />
-              <div className="h-[56px] animate-pulse rounded-[4px] border border-[var(--color-gray-500)] bg-[var(--color-gray-100)]" />
-              <div className="h-[56px] animate-pulse rounded-[4px] border border-[var(--color-gray-500)] bg-[var(--color-gray-100)]" />
-              <div className="h-[56px] animate-pulse rounded-[4px] bg-[var(--color-gray-700)]" />
+              <Skeleton className="h-[56px] rounded-[4px] border border-[var(--color-gray-500)] bg-[var(--color-gray-100)]" />
+              <Skeleton className="h-[56px] rounded-[4px] border border-[var(--color-gray-500)] bg-[var(--color-gray-100)]" />
+              <Skeleton className="h-[56px] rounded-[4px] border border-[var(--color-gray-500)] bg-[var(--color-gray-100)]" />
+              <Skeleton className="h-[56px] rounded-[4px] bg-[var(--color-gray-700)]" />
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-[18px]">
               {Array.from({ length: 6 }, (_, index) => (
@@ -50,10 +52,7 @@ export default function Loading() {
             </div>
             <div className="mt-auto hidden items-center justify-center gap-[18px] pt-1 sm:flex">
               {Array.from({ length: 7 }, (_, index) => (
-                <div
-                  key={index + 1}
-                  className="h-8 w-8 animate-pulse rounded-full bg-[var(--color-gray-300)]"
-                />
+                <Skeleton key={index + 1} className="h-8 w-8 rounded-full" />
               ))}
             </div>
           </div>
