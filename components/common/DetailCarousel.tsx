@@ -9,6 +9,7 @@ import {
   CarouselItem,
   type CarouselApi,
 } from '@/components/ui/carousel';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 import type { SyntheticEvent } from 'react';
@@ -69,7 +70,7 @@ export function DetailCarousel({ images }: DetailCarouselProps) {
       align: 'start',
       containScroll: 'trimSnaps',
       dragFree: false,
-      loop: false,
+      loop: true,
       skipSnaps: false,
     });
 
@@ -157,7 +158,7 @@ export function DetailCarousel({ images }: DetailCarouselProps) {
           align: 'start',
           containScroll: 'trimSnaps',
           dragFree: false,
-          loop: false,
+          loop: true,
           skipSnaps: false,
         }}
         setApi={setApi}
@@ -168,11 +169,11 @@ export function DetailCarousel({ images }: DetailCarouselProps) {
               key={`${image}-${index + 1}`}
               className="basis-auto pl-2"
             >
-              <div className="relative overflow-hidden bg-[var(--color-gray-300)]">
+              <div className="relative overflow-hidden">
                 {!loadedImages[image] ? (
-                  <div
+                  <Skeleton
                     aria-hidden="true"
-                    className="animate-pulse bg-[var(--color-gray-300)]"
+                    className="rounded-none"
                     style={{
                       height:
                         imageDimensions[image]?.height ?? IMAGE_FALLBACK_HEIGHT,

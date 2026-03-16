@@ -1,6 +1,7 @@
 import { JobCard } from '@/components/common/JobCard';
 import { Pagination } from '@/components/common/Pagination';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { getJobList } from '@/lib/api/jobs.server';
 import { cn } from '@/lib/utils';
 import {
@@ -90,20 +91,18 @@ export async function JobResultsSection({
           </div>
         ))}
       </div>
-      {totalPages > 1 ? (
-        <div className="mt-3">
-          <Pagination
-            currentPage={searchState.page}
-            pageHrefs={Array.from({ length: totalPages }, (_, index) =>
-              buildHref(searchState, {
-                detailId: undefined,
-                page: index + 1,
-              }),
-            )}
-            totalPages={totalPages}
-          />
-        </div>
-      ) : null}
+      <div className="mt-3">
+        <Pagination
+          currentPage={searchState.page}
+          pageHrefs={Array.from({ length: totalPages }, (_, index) =>
+            buildHref(searchState, {
+              detailId: undefined,
+              page: index + 1,
+            }),
+          )}
+          totalPages={totalPages}
+        />
+      </div>
     </>
   );
 }
@@ -129,28 +128,28 @@ function LoadingCardSkeleton() {
   return (
     <Card className="!ring-0 gap-[10px] rounded-[6px] border border-[var(--color-gray-500)] bg-background px-4 !py-4 shadow-none min-h-[220px] max-h-[220px]">
       <CardContent className="flex min-h-[148px] flex-col gap-[10px] px-0 py-0">
-        <div className="h-5 w-28 animate-pulse rounded bg-[var(--color-gray-300)] sm:h-[30px] sm:w-36" />
+        <Skeleton className="h-5 w-28 rounded sm:h-[30px] sm:w-36" />
         <div className="flex flex-col gap-2">
           <div className="flex items-start gap-2">
-            <div className="mt-px size-[18px] shrink-0 animate-pulse rounded-full bg-[var(--color-gray-300)]" />
-            <div className="h-[18px] w-40 animate-pulse rounded bg-[var(--color-gray-300)]" />
+            <Skeleton className="mt-px size-[18px] shrink-0 rounded-full" />
+            <Skeleton className="h-[18px] w-40 rounded" />
           </div>
           <div className="flex items-start gap-2">
-            <div className="mt-px size-[18px] shrink-0 animate-pulse rounded-full bg-[var(--color-gray-300)]" />
-            <div className="h-[18px] w-20 animate-pulse rounded bg-[var(--color-gray-300)]" />
+            <Skeleton className="mt-px size-[18px] shrink-0 rounded-full" />
+            <Skeleton className="h-[18px] w-20 rounded" />
           </div>
           <div className="flex items-start gap-2">
-            <div className="mt-px size-[18px] shrink-0 animate-pulse rounded-full bg-[var(--color-gray-300)]" />
-            <div className="h-[18px] w-32 animate-pulse rounded bg-[var(--color-gray-300)]" />
+            <Skeleton className="mt-px size-[18px] shrink-0 rounded-full" />
+            <Skeleton className="h-[18px] w-32 rounded" />
           </div>
         </div>
         <div className="grid h-[35px] gap-2 overflow-hidden">
-          <div className="h-4 w-full animate-pulse rounded bg-[var(--color-gray-300)]" />
-          <div className="h-4 w-5/6 animate-pulse rounded bg-[var(--color-gray-300)]" />
+          <Skeleton className="h-4 w-full rounded" />
+          <Skeleton className="h-4 w-5/6 rounded" />
         </div>
       </CardContent>
       <CardFooter className="justify-center rounded-none border-0 bg-background px-0 py-0">
-        <div className="h-5 w-20 animate-pulse rounded bg-[var(--color-gray-300)]" />
+        <Skeleton className="h-5 w-20 rounded" />
       </CardFooter>
     </Card>
   );
@@ -182,10 +181,7 @@ export function JobResultsSectionSkeleton({
       </div>
       <div className="mt-auto hidden items-center justify-center gap-[18px] pt-1 sm:flex">
         {Array.from({ length: 7 }, (_, index) => (
-          <div
-            key={index + 1}
-            className="h-8 w-8 animate-pulse rounded-full bg-[var(--color-gray-300)]"
-          />
+          <Skeleton key={index + 1} className="h-8 w-8 rounded-full" />
         ))}
       </div>
     </>

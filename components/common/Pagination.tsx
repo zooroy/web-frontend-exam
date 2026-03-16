@@ -2,8 +2,8 @@
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import { useMemo } from 'react';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -65,7 +65,7 @@ function PaginationPageLink({
   href: string;
   isCurrent: boolean;
   label: number;
-  onNavigate: () => void;
+  onNavigate: (href: string) => void;
 }) {
   return (
     <Link
@@ -73,7 +73,14 @@ function PaginationPageLink({
       scroll={false}
       aria-current={isCurrent ? 'page' : undefined}
       aria-disabled={disabled}
-      onClick={disabled ? undefined : onNavigate}
+      onClick={
+        disabled
+          ? undefined
+          : (event) => {
+              event.preventDefault();
+              onNavigate(href);
+            }
+      }
       className={cn(
         'body2 flex h-8 min-w-8 items-center justify-center rounded-full px-2 font-normal transition-colors',
         isCurrent
@@ -96,7 +103,7 @@ function PaginationArrowLink({
   direction: 'next' | 'prev';
   disabled: boolean;
   href: string;
-  onNavigate: () => void;
+  onNavigate: (href: string) => void;
 }) {
   return (
     <Link
@@ -104,7 +111,14 @@ function PaginationArrowLink({
       scroll={false}
       aria-label={direction === 'prev' ? '上一頁' : '下一頁'}
       aria-disabled={disabled}
-      onClick={disabled ? undefined : onNavigate}
+      onClick={
+        disabled
+          ? undefined
+          : (event) => {
+              event.preventDefault();
+              onNavigate(href);
+            }
+      }
       className={cn(
         'flex h-8 w-8 items-center justify-center text-[var(--color-gray-700)] transition-colors hover:text-foreground',
         disabled &&
@@ -132,7 +146,7 @@ function renderPaginationItems(
   items: PaginationItem[],
   currentPage: number,
   isLocked: boolean,
-  onNavigate: () => void,
+  onNavigate: (href: string) => void,
   pageHrefs: string[],
 ) {
   return items.map((item, index) => {
@@ -158,6 +172,7 @@ export function Pagination({
   pageHrefs,
   totalPages,
 }: PaginationProps) {
+  const router = useRouter();
   const [isLocked, setIsLocked] = useState(false);
   const desktopItems = useMemo(
     () => Array.from({ length: totalPages }, (_, index) => index + 1),
@@ -168,8 +183,9 @@ export function Pagination({
     [currentPage, totalPages],
   );
 
-  function handleNavigate() {
+  function handleNavigate(href: string) {
     setIsLocked(true);
+    router.push(href, { scroll: false });
     window.setTimeout(() => {
       setIsLocked(false);
     }, 800);

@@ -1,5 +1,6 @@
 'use client';
 
+import { SelectCaretIcon } from '@/components/common/icons/OutlineIcons';
 import {
   Select,
   SelectContent,
@@ -36,12 +37,16 @@ export function FilterSelect({
       <label className="body1 absolute top-0 left-3 z-10 -translate-y-1/2 bg-[var(--color-gray-100)] px-1 font-normal leading-none text-foreground">
         {label}
       </label>
+      <div className="pointer-events-none absolute top-1/2 right-4 z-10 -translate-y-1/2 text-[var(--color-gray-800)]">
+        <SelectCaretIcon className="size-5" />
+      </div>
       <Select disabled={disabled} value={value} onValueChange={onValueChange}>
         <SelectTrigger
           className={cn(
-            'body3 !h-[56px] w-full rounded-[4px] border-[var(--color-gray-500)] bg-[var(--color-gray-100)] px-4 text-left font-normal text-foreground shadow-none',
+            'body3 !h-[56px] w-full rounded-[4px] border-[var(--color-gray-500)] bg-[var(--color-gray-100)] px-4 pr-10 text-left font-normal text-foreground shadow-none',
             'data-[placeholder]:text-foreground',
             'disabled:bg-[var(--color-gray-100)] disabled:text-muted-foreground disabled:opacity-100',
+            '[&>svg]:hidden',
           )}
           aria-label={label}
         >

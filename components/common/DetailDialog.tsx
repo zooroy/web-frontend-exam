@@ -46,15 +46,22 @@ export function DetailDialog({ job, onClose, open }: DetailDialogProps) {
             </DialogTitle>
           </DialogHeader>
           <div className="flex max-h-[min(768px,calc(100vh-120px))] flex-col gap-3 overflow-y-auto px-4 py-4 sm:gap-[18px] sm:px-6 sm:py-5">
-            <div className="flex flex-col body4 font-bold text-foreground sm:body5">
-              {job?.companyName ?? '未提供公司名稱'}
+            <div className="flex flex-wrap flex-col gap-x-2 gap-y-1 sm:flex-row sm:items-center">
+              <span className="body4 font-bold text-foreground sm:body5">
+                {job?.companyName ?? '未提供公司名稱'}
+              </span>
+              {job?.jobTitle ? (
+                <span className="body2 font-normal text-foreground sm:body4">
+                  {job.jobTitle}
+                </span>
+              ) : null}
             </div>
             <DetailCarousel images={job?.companyPhoto ?? []} />
             <div className="flex flex-col gap-2 sm:gap-2">
               <h3 className="body3 font-bold text-foreground sm:body4">
                 工作內容
               </h3>
-              <div className="body3 font-normal leading-[1.25] text-muted-foreground [&_a]:font-bold [&_a]:text-primary [&_a]:underline [&_h1]:body4 [&_h1]:font-bold [&_h2]:body3 [&_h2]:mt-5 [&_h2]:font-bold [&_li]:ml-5 [&_li]:list-disc [&_p]:mt-4">
+              <div className="body3 font-normal leading-[1.25] text-[var(--color-gray-800)] [&_a]:font-bold [&_a]:text-primary [&_a]:underline [&_h1]:body4 [&_h1]:font-bold [&_h2]:body3 [&_h2]:mt-5 [&_h2]:font-bold [&_li]:ml-5 [&_li]:list-disc [&_p]:mt-4">
                 {parse(job?.description ?? '')}
               </div>
             </div>
