@@ -38,7 +38,7 @@ export function HomePageShell({
 
   return (
     <div className="min-h-screen  bg-[linear-gradient(90deg,var(--color-gray-700)_0%,var(--color-gray-1000)_100%)]">
-      <ResponsiveModeSync />
+      <ResponsiveModeSync initialMode={initialMode} />
       <HeroSection />
       <main className="relative z-10 mx-auto max-w-[1440px] pb-3 sm:-mt-[124px] sm:px-7 sm:pb-7">
         <section className="flex flex-col border border-[var(--border-default)] bg-background px-4 py-4 shadow-[2px_2px_3.5px_rgba(0,0,0,0.25)] sm:px-6 sm:py-6 sm:rounded-[12px]">

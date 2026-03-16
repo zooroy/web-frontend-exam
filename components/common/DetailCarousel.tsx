@@ -26,6 +26,7 @@ interface ImageDimensions {
 const AUTO_PLAY_DELAY = 4000;
 const IMAGE_FALLBACK_HEIGHT = 150;
 const IMAGE_FALLBACK_WIDTH = 250;
+const VISIBLE_IMAGE_RADIUS = 2;
 
 export function DetailCarousel({ images }: DetailCarouselProps) {
   const [api, setApi] = useState<CarouselApi>();
@@ -70,7 +71,7 @@ export function DetailCarousel({ images }: DetailCarouselProps) {
       align: 'start',
       containScroll: 'trimSnaps',
       dragFree: false,
-      loop: true,
+      loop: false,
       skipSnaps: false,
     });
 
@@ -158,7 +159,7 @@ export function DetailCarousel({ images }: DetailCarouselProps) {
           align: 'start',
           containScroll: 'trimSnaps',
           dragFree: false,
-          loop: true,
+          loop: false,
           skipSnaps: false,
         }}
         setApi={setApi}
@@ -169,43 +170,24 @@ export function DetailCarousel({ images }: DetailCarouselProps) {
               key={`${image}-${index + 1}`}
               className="basis-auto pl-2"
             >
-              <div className="relative overflow-hidden">
-                {!loadedImages[image] ? (
-                  <Skeleton
-                    aria-hidden="true"
-                    className="rounded-none"
-                    style={{
-                      height:
-                        imageDimensions[image]?.height ?? IMAGE_FALLBACK_HEIGHT,
-                      width:
-                        imageDimensions[image]?.width ?? IMAGE_FALLBACK_WIDTH,
-                    }}
-                  />
-                ) : null}
-                <Image
-                  alt={`工作圖片 ${index + 1}`}
-                  className={cn(
-                    'h-auto w-auto max-w-none transition-opacity duration-200',
-                    loadedImages[image]
-                      ? 'opacity-100'
-                      : 'absolute inset-0 opacity-0',
-                  )}
-                  draggable={false}
-                  height={
-                    imageDimensions[image]?.height ?? IMAGE_FALLBACK_HEIGHT
+              <CarouselSlide
+                image={image}
+                imageDimensions={imageDimensions[image]}
+                index={index}
+                isLoaded={loadedImages[image]}
+                isVisible={Math.abs(index - activePage) <= VISIBLE_IMAGE_RADIUS}
+                onImageLoad={handleImageLoad}
+                onLoadStateChange={(nextLoaded) => {
+                  if (!nextLoaded) {
+                    return;
                   }
-                  src={image}
-                  unoptimized
-                  width={imageDimensions[image]?.width ?? IMAGE_FALLBACK_WIDTH}
-                  onLoad={(event) => {
-                    handleImageLoad(image, event);
-                    setLoadedImages((previousImages) => ({
-                      ...previousImages,
-                      [image]: true,
-                    }));
-                  }}
-                />
-              </div>
+
+                  setLoadedImages((previousImages) => ({
+                    ...previousImages,
+                    [image]: true,
+                  }));
+                }}
+              />
             </CarouselItem>
           ))}
         </CarouselContent>
@@ -228,6 +210,76 @@ export function DetailCarousel({ images }: DetailCarouselProps) {
           />
         ))}
       </div>
+    </div>
+  );
+}
+
+interface CarouselSlideProps {
+  image: string;
+  imageDimensions?: ImageDimensions;
+  index: number;
+  isLoaded?: boolean;
+  isVisible: boolean;
+  onImageLoad: (
+    imageKey: string,
+    event: SyntheticEvent<HTMLImageElement>,
+  ) => void;
+  onLoadStateChange: (nextLoaded: boolean) => void;
+}
+
+function CarouselSlide({
+  image,
+  imageDimensions,
+  index,
+  isLoaded = false,
+  isVisible,
+  onImageLoad,
+  onLoadStateChange,
+}: CarouselSlideProps) {
+  const fallbackHeight = imageDimensions?.height ?? IMAGE_FALLBACK_HEIGHT;
+  const fallbackWidth = imageDimensions?.width ?? IMAGE_FALLBACK_WIDTH;
+
+  if (!isVisible && !isLoaded) {
+    return (
+      <div
+        aria-hidden="true"
+        className="bg-[var(--color-gray-200)]"
+        style={{
+          height: fallbackHeight,
+          width: fallbackWidth,
+        }}
+      />
+    );
+  }
+
+  return (
+    <div className="relative overflow-hidden">
+      {!isLoaded ? (
+        <Skeleton
+          aria-hidden="true"
+          className="rounded-none"
+          style={{
+            height: fallbackHeight,
+            width: fallbackWidth,
+          }}
+        />
+      ) : null}
+      <Image
+        alt={`工作圖片 ${index + 1}`}
+        className={cn(
+          'h-auto w-auto max-w-none transition-opacity duration-200',
+          isLoaded ? 'opacity-100' : 'absolute inset-0 opacity-0',
+        )}
+        draggable={false}
+        height={fallbackHeight}
+        src={image}
+        unoptimized
+        width={fallbackWidth}
+        onLoad={(event) => {
+          onImageLoad(image, event);
+          onLoadStateChange(true);
+        }}
+      />
     </div>
   );
 }

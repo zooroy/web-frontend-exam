@@ -4,12 +4,12 @@ import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import { memo, useEffect, useState } from 'react';
 
-import backgroundImage from '@/public/hero-section/Background-01.png';
-import characterWhiteImage from '@/public/hero-section/Character-01-White.png';
-import characterImage from '@/public/hero-section/Character-01.png';
-import leftEyeImage from '@/public/hero-section/LeftEye-01.png';
-import logoImage from '@/public/hero-section/Logo-01.png';
-import rightEyeImage from '@/public/hero-section/RightEye-01.png';
+import backgroundImage from '@/public/hero-section/background.webp';
+import characterWhiteImage from '@/public/hero-section/character-white.webp';
+import characterImage from '@/public/hero-section/character.webp';
+import leftEyeImage from '@/public/hero-section/left-eye.webp';
+import logoImage from '@/public/hero-section/logo.webp';
+import rightEyeImage from '@/public/hero-section/right-eye.webp';
 
 interface EyeOffset {
   x: number;
@@ -110,7 +110,6 @@ function HeroSectionComponent() {
                 src={characterWhiteImage}
                 alt="Hero portrait highlight"
                 fill
-                priority
                 placeholder="blur"
                 className="object-left-bottom object-contain"
                 sizes="(min-width: 640px) 1097px, 100vw"
@@ -134,6 +133,7 @@ function HeroSectionComponent() {
                     alt=""
                     width={41}
                     height={33}
+                    priority
                     className="h-auto w-full"
                   />
                 </motion.div>
@@ -154,6 +154,7 @@ function HeroSectionComponent() {
                     alt=""
                     width={37}
                     height={30}
+                    priority
                     className="h-auto w-full"
                   />
                 </motion.div>
@@ -162,7 +163,6 @@ function HeroSectionComponent() {
                 src={characterImage}
                 alt="Hero portrait"
                 fill
-                priority
                 placeholder="blur"
                 className="object-left-bottom object-contain"
                 sizes="(min-width: 640px) 1097px, 100vw"

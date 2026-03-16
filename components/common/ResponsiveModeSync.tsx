@@ -1,26 +1,34 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
-export function ResponsiveModeSync() {
+interface ResponsiveModeSyncProps {
+  initialMode: 'desktop' | 'mobile';
+}
+
+export function ResponsiveModeSync({ initialMode }: ResponsiveModeSyncProps) {
   const router = useRouter();
+  const previousModeRef = useRef(initialMode);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(min-width: 640px)');
 
     function syncMode() {
       const nextMode = mediaQuery.matches ? 'desktop' : 'mobile';
-      const currentMode = document.cookie
+      const currentCookieMode = document.cookie
         .split('; ')
         .find((cookieValue) => cookieValue.startsWith('viewport-mode='))
         ?.split('=')[1];
+      const previousMode = previousModeRef.current;
 
-      if (currentMode === nextMode) {
+      document.cookie = `viewport-mode=${nextMode}; path=/; max-age=31536000; samesite=lax`;
+
+      if (nextMode === previousMode && currentCookieMode === nextMode) {
         return;
       }
 
-      document.cookie = `viewport-mode=${nextMode}; path=/; max-age=31536000; samesite=lax`;
+      previousModeRef.current = nextMode;
       router.refresh();
     }
 
@@ -30,7 +38,7 @@ export function ResponsiveModeSync() {
     return function cleanup() {
       mediaQuery.removeEventListener('change', syncMode);
     };
-  }, [router]);
+  }, [initialMode, router]);
 
   return null;
 }

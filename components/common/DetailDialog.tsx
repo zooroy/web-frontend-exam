@@ -1,9 +1,8 @@
 'use client';
 
-import parse from 'html-react-parser';
+import dynamic from 'next/dynamic';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 
-import { DetailCarousel } from '@/components/common/DetailCarousel';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -16,10 +15,62 @@ import {
 import { cn } from '@/lib/utils';
 import type { JobDetail } from '@/types/api';
 
+const DetailCarousel = dynamic(
+  () =>
+    import('@/components/common/DetailCarousel').then((module) => ({
+      default: module.DetailCarousel,
+    })),
+  {
+    loading: () => <DetailCarouselFallback />,
+    ssr: false,
+  },
+);
+
+const JobDescription = dynamic(
+  () =>
+    import('@/components/common/JobDescription').then((module) => ({
+      default: module.JobDescription,
+    })),
+  {
+    loading: () => <JobDescriptionFallback />,
+    ssr: false,
+  },
+);
+
 interface DetailDialogProps {
   job: JobDetail | null;
   onClose: () => void;
   open: boolean;
+}
+
+function DetailCarouselFallback() {
+  return (
+    <div className="flex flex-col gap-[10px]">
+      <div className="h-[150px] w-full animate-pulse bg-[var(--color-gray-300)]" />
+      <div className="flex justify-center gap-2">
+        {Array.from({ length: 3 }, (_, index) => (
+          <div
+            key={index + 1}
+            className={cn(
+              'rounded-full bg-[var(--color-gray-500)]',
+              index === 0 ? 'h-[6px] w-6 bg-primary' : 'size-[6px]',
+            )}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function JobDescriptionFallback() {
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="h-4 w-full animate-pulse bg-[var(--color-gray-300)]" />
+      <div className="h-4 w-11/12 animate-pulse bg-[var(--color-gray-300)]" />
+      <div className="h-4 w-10/12 animate-pulse bg-[var(--color-gray-300)]" />
+      <div className="h-4 w-4/5 animate-pulse bg-[var(--color-gray-300)]" />
+    </div>
+  );
 }
 
 export function DetailDialog({ job, onClose, open }: DetailDialogProps) {
@@ -56,13 +107,21 @@ export function DetailDialog({ job, onClose, open }: DetailDialogProps) {
                 </span>
               ) : null}
             </div>
-            <DetailCarousel images={job?.companyPhoto ?? []} />
+            {open && job ? (
+              <DetailCarousel images={job.companyPhoto} />
+            ) : (
+              <DetailCarouselFallback />
+            )}
             <div className="flex flex-col gap-2 sm:gap-2">
               <h3 className="body3 font-bold text-foreground sm:body4">
                 工作內容
               </h3>
               <div className="body3 font-normal leading-[1.25] text-[var(--color-gray-800)] [&_a]:font-bold [&_a]:text-primary [&_a]:underline [&_h1]:body4 [&_h1]:font-bold [&_h2]:body3 [&_h2]:mt-5 [&_h2]:font-bold [&_li]:ml-5 [&_li]:list-disc [&_p]:mt-4">
-                {parse(job?.description ?? '')}
+                {open && job ? (
+                  <JobDescription description={job.description} />
+                ) : (
+                  <JobDescriptionFallback />
+                )}
               </div>
             </div>
           </div>
