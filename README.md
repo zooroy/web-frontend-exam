@@ -2,6 +2,8 @@
 
 以 Next.js 16 App Router 建構的前端職缺展示網站。此專案採用 Server Components 優先策略，首頁透過 URL state 驅動條件查詢、分頁與職缺詳細資訊彈窗，資料來源目前為專案內的 mock data 與 Route Handlers。
 
+🔗 線上預覽：[https://web-frontend-exam-blush.vercel.app/](https://web-frontend-exam-blush.vercel.app/)
+
 > 本專案使用的套件與框架由本人決定；網站佈局策略則透過與 Claude Code 討論後，整理撰寫出 `spec` 與 `AGENTS.md`；實際程式碼實作由 Codex 執行。
 
 ## Tech Stack
