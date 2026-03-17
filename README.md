@@ -2,6 +2,8 @@
 
 以 Next.js 16 App Router 建構的前端職缺展示網站。此專案採用 Server Components 優先策略，首頁透過 URL state 驅動條件查詢、分頁與職缺詳細資訊彈窗，資料來源目前為專案內的 mock data 與 Route Handlers。
 
+> 本專案使用的套件與框架由本人決定；網站佈局策略則透過與 Claude Code 討論後，整理撰寫出 `spec` 與 `AGENTS.md`；實際程式碼實作由 Codex 執行。
+
 ## 技術棧
 
 - Next.js 16.1.6
@@ -173,7 +175,7 @@ App Router API routes 負責將 mock data 包成正式 API 介面：
 - `app/api/v1/educationLevelList/route.ts`
 - `app/api/v1/salaryLevelList/route.ts`
 
-Server Component 不直接讀 `data/*`，而是透過 `lib/api/jobs.server.ts` 呼叫上述 API route，維持資料存取邊界一致。
+透過 `lib/api/jobs.server.ts` 呼叫上述 API route，維持資料存取邊界一致。
 
 ### 6. `lib/api` 的角色
 
@@ -269,56 +271,66 @@ pnpm test:e2e
 - 不破壞 SEO 的資料流
 - 保持互動操作時的使用者體感
 
-### 1. 困難：Server-driven 架構下，互動容易影響體感
+### 1. 遇到的困難
 
-首頁採用 Next.js App Router 與 Server Components，主要資料流由 URL state 驅動。這樣的好處是：
+這個專案的首頁不是單純的前端頁面，而是用 Next.js App Router 搭配 Server Components 來做，查詢條件、分頁、彈窗狀態也都跟 URL 綁在一起。
 
-- 首頁內容可由 server 直接輸出，對 SEO 較友善
-- URL 可分享、可重整、可還原狀態
-- 查詢條件、分頁與詳細資訊彈窗都能保持一致的狀態來源
+這樣做的好處很明顯：
 
-但同時也帶來一個實際困難：
+- 首頁內容可以直接由 server 輸出，對 SEO 比較友善
+- URL 可以分享、重新整理後也能回到同樣的狀態
+- 列表、篩選條件和詳細資訊可以共用同一套狀態來源
+
+但實作上也比較麻煩，因為：
 
 - 只要 query string 改變，就可能重新觸發 Server Component render
-- 若處理不慎，容易造成 loading 過重、畫面跳動、動畫重播或互動延遲
+- 如果處理不好，使用者在操作時會覺得卡，或看到 loading 太重
+- 畫面也可能出現跳動、重播動畫，甚至整塊內容重新刷新的感覺
 
-### 2. 問題：如何讓 Web Vitals 維持良好
+### 2. 主要問題
 
-在版面與互動設計上，主要關注的是 LCP、CLS 與操作體感：
+實際開發時，最核心的問題是：
 
-- Hero 圖片使用 `next/image`
-- 人物圖層統一在資源 ready 後再一起進場，避免一張一張出現造成視覺不穩
-- modal 與列表 loading 改用一致的 skeleton，避免多層 loading UI
-- 搜尋條件未變時不再重送 navigation，避免無意義的重新查詢與重新渲染
+- 怎麼保住 SEO，不要把主要資料流全部搬到 client
+- 怎麼讓 Web Vitals 不要因為 loading 或版面跳動而變差
+- 怎麼讓使用者在搜尋、切頁、開 modal 的時候，不會覺得畫面一直重載
 
-這些調整的目的，是避免為了「有 loading 效果」而犧牲實際穩定度。
+換句話說，這個專案要處理的不是單一功能，而是要同時兼顧：
 
-### 3. 解決方法：以「Server 真值 + Client 過渡層」作為佈局策略
+- 搜尋引擎看得到穩定內容
+- 使用者操作時不會卡頓
+- 畫面在切換資料時不要太跳
 
-本專案最後採取的核心解法是：
+### 3. 解決方法
+
+最後採用的做法是把責任拆成兩邊：`Server` 負責真正的資料結果，`Client` 負責切換過程的體驗。
 
 #### Server 端負責
 
 - 首頁首屏內容與列表資料
-- URL state 對應的查詢與 detail 狀態
-- 可被搜尋引擎穩定取得的 HTML 結果
+- URL 對應的查詢條件、分頁與 detail 狀態
+- 提供搜尋引擎可以穩定讀到的 HTML 結果
 
 #### Client 端負責
 
-- 條件輸入、分頁點擊、彈窗開關
-- loading skeleton 與細節動畫
-- detail 預抓與 cache，改善 modal 體感
-- 避免無效 navigation 與重複請求，例如：點擊重複的篩選條件
+- 條件輸入、分頁點擊、彈窗開關這些互動
+- loading skeleton 與必要的過渡效果
+- detail 預抓與 cache，減少 modal 開啟時的等待感
+- 避免無效 navigation，例如條件沒變時不重送查詢
 
-這樣的分工讓專案可以在不放棄 SEO 的情況下，把互動體驗補到可接受甚至不錯的程度。
+另外也做了幾個具體調整來穩定體驗：
 
-### 4. 目前的取捨結論
+- Hero 圖片使用 `next/image`
+- 人物圖層等資源準備好後再一起進場，避免一張一張跳出來
+- 搜尋條件沒變時不重新導頁，避免不必要的重新渲染
 
-本專案的佈局與資料策略，不是單純追求「每次互動都完全 client-side」，而是明確做出以下取捨：
+### 4. 最後的取捨
 
-- 主要內容維持 server render，確保 SEO 與資料一致性
-- 互動過渡由 client 補強，降低等待感
-- 優先避免整塊畫面重建，而不是強行讓每次切換都顯示大型 loading
-- 在 Web Vitals、SEO、互動流暢度之間，以整體穩定為優先
+這個專案沒有走「所有互動都改成純 client-side」這條路，而是選擇：
 
-這也是目前整個網站版面策略的核心方向。
+- 主要內容繼續由 server render，確保 SEO 與資料一致
+- 使用者操作時，再由 client 補上過渡體驗
+- 優先避免整塊畫面重建，而不是追求每次切換都做很重的 loading 效果
+- 在 Web Vitals、SEO 和操作流暢度之間，以整體穩定為優先
+
+這就是目前這個專案在版面與資料流上的核心策略。
