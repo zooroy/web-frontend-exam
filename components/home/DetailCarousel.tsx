@@ -44,7 +44,10 @@ export function DetailCarousel({
   const [isInteracting, setIsInteracting] = useState(false);
   const dotIndexes = Array.from({ length: images.length }, (_, index) => index);
   const isLoading = loading || images.length === 0;
-  const clampedActivePage = Math.max(0, Math.min(activePage, images.length - 1));
+  const clampedActivePage = Math.max(
+    0,
+    Math.min(activePage, images.length - 1),
+  );
 
   useEffect(() => {
     if (!api) {
@@ -76,7 +79,7 @@ export function DetailCarousel({
       align: 'start',
       containScroll: 'trimSnaps',
       dragFree: false,
-      loop: false,
+      loop: true,
       skipSnaps: false,
     });
 
@@ -148,10 +151,9 @@ export function DetailCarousel({
     });
   }
 
-  return (
-    isLoading ? (
-      <DetailCarouselLoading />
-    ) : (
+  return isLoading ? (
+    <DetailCarouselLoading />
+  ) : (
     <div
       className="flex flex-col gap-[10px]"
       onMouseEnter={() => {
@@ -167,7 +169,7 @@ export function DetailCarousel({
           align: 'start',
           containScroll: 'trimSnaps',
           dragFree: false,
-          loop: false,
+          loop: true,
           skipSnaps: false,
         }}
         setApi={setApi}
@@ -223,7 +225,6 @@ export function DetailCarousel({
         ))}
       </div>
     </div>
-    )
   );
 }
 
@@ -308,7 +309,9 @@ function CarouselSlide({
             ? 'opacity-100 blur-0 scale-100'
             : cn(
                 'absolute inset-0 opacity-0',
-                shouldReduceMotion ? 'scale-100 blur-0' : 'scale-[1.02] blur-[2px]',
+                shouldReduceMotion
+                  ? 'scale-100 blur-0'
+                  : 'scale-[1.02] blur-[2px]',
               ),
         )}
         draggable={false}
