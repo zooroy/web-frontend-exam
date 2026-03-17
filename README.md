@@ -4,7 +4,7 @@
 
 > 本專案使用的套件與框架由本人決定；網站佈局策略則透過與 Claude Code 討論後，整理撰寫出 `spec` 與 `AGENTS.md`；實際程式碼實作由 Codex 執行。
 
-## 技術棧
+## Tech Stack
 
 - Next.js 16.1.6
 - React 19.2.3
@@ -15,9 +15,9 @@
 - Vitest
 - Playwright
 
-## 如何執行此專案
+## 🚀 如何執行此專案
 
-### 1. 安裝依賴
+### 1. 📦 安裝依賴
 
 本專案使用 `pnpm`。
 
@@ -25,7 +25,7 @@
 pnpm install
 ```
 
-### 2. 啟動開發環境
+### 2. 🧪 啟動開發環境
 
 ```bash
 pnpm dev
@@ -33,14 +33,14 @@ pnpm dev
 
 預設開發網址為 [http://localhost:3000](http://localhost:3000)。
 
-### 3. 建置與啟動正式版本
+### 3. 🏗️ 建置與啟動正式版本
 
 ```bash
 pnpm build
 pnpm start
 ```
 
-### 4. 常用檢查指令
+### 4. ✅ 常用檢查指令
 
 ```bash
 pnpm lint
@@ -53,7 +53,7 @@ pnpm test:e2e
 - `pnpm test` 會執行 Vitest 單元測試
 - `pnpm test:e2e` 會執行 Playwright E2E，並依 `playwright.config.ts` 先建置再啟動正式 server
 
-## 專案架構、邏輯說明
+## 🧭 專案架構、邏輯說明
 
 ```text
 .
@@ -79,7 +79,7 @@ pnpm test:e2e
 └── public/                   # 靜態資源
 ```
 
-### 1. 首頁資料流
+### 1. 🏠 首頁資料流
 
 首頁入口在 `app/page.tsx`，是 Server Component。
 
@@ -94,7 +94,7 @@ pnpm test:e2e
    - 若 URL 帶有 `detail`，則取職缺詳細資料 `getJobDetail()`
 5. 將資料交給 `HomePageShell` 組裝畫面。
 
-### 2. 查詢條件與 URL state
+### 2. 🔗 查詢條件與 URL state
 
 專案以 URL query string 作為主要互動狀態來源，邏輯集中在 `lib/utils/jobSearchParams.ts`。
 
@@ -113,9 +113,9 @@ pnpm test:e2e
 - Client Component 只負責互動與更新 URL，不直接重建主要資料流
 - `JobFilters` 會在條件與目前 URL 完全一致時直接略過 `router.push()`，避免不必要的重新查詢
 
-### 3. Server Component 與 Client Component 分工
+### 3. ⚖️ Server Component 與 Client Component 分工
 
-#### Server Components
+#### 🖥️ Server Components
 
 - `app/page.tsx`
 - `components/home/HomePageShell.tsx`
@@ -128,7 +128,7 @@ pnpm test:e2e
 - 決定首屏資料與列表內容
 - 透過 `Suspense` 為職缺列表區塊提供 fallback
 
-#### Client Components
+#### 💡 Client Components
 
 - `components/home/JobFilters.tsx`
 - `components/home/DetailTriggerLink.tsx`
@@ -144,7 +144,7 @@ pnpm test:e2e
 - 在必要處補上 client-side 體驗優化，例如 detail 預抓與 modal loading 過渡
 - 接收 Server Component 傳入的初始資料，不在 client 端重抓主要列表
 
-### 4. 職缺列表渲染邏輯
+### 4. 📋 職缺列表渲染邏輯
 
 `components/home/JobResultsSection.tsx` 是 async Server Component，負責：
 
@@ -158,7 +158,7 @@ pnpm test:e2e
 
 `HomePageShell` 目前保留 `Suspense fallback`，但不再額外用查詢條件強制重建整個結果區塊，以減少切頁時的視覺跳動。
 
-### 5. API 與 mock data 關係
+### 5. 🔌 API 與 mock data 關係
 
 目前專案沒有外部 API，資料都來自 `data/`。
 
@@ -177,7 +177,7 @@ App Router API routes 負責將 mock data 包成正式 API 介面：
 
 透過 `lib/api/jobs.server.ts` 呼叫上述 API route，維持資料存取邊界一致。
 
-### 6. `lib/api` 的角色
+### 6. 🧰 `lib/api` 的角色
 
 `lib/api/server.ts`
 
@@ -200,9 +200,9 @@ App Router API routes 負責將 mock data 包成正式 API 介面：
 
 這一層只服務於 detail modal 的體感優化，不取代 Server Component 的主資料流。
 
-## 主要頁面互動流程
+## 🔄 主要頁面互動流程
 
-### 條件搜尋
+### 🔍 條件搜尋
 
 1. 使用者在 `JobFilters` 輸入條件
 2. `JobFilters` 使用 `createJobSearchParams()` 產生新的 query string
@@ -211,7 +211,7 @@ App Router API routes 負責將 mock data 包成正式 API 介面：
 5. Next.js 重新觸發 Server Component render
 6. `JobResultsSection` 依新條件重新取得資料
 
-### 查看詳細資訊
+### 🪟 查看詳細資訊
 
 1. 使用者點擊職缺卡片上的「查看細節」
 2. `DetailTriggerLink` 會先送出 pending open 事件，讓 modal 立即打開 loading UI
@@ -225,7 +225,7 @@ App Router API routes 負責將 mock data 包成正式 API 介面：
 - 點擊 modal 外部區域不會關閉 dialog
 - 關閉流程以明確的關閉按鈕為主
 
-### 分頁
+### 📄 分頁
 
 1. `JobResultsSection` 依 `jobs.total` 計算總頁數
 2. `Pagination` 接收每一頁對應的 href
@@ -233,7 +233,7 @@ App Router API routes 負責將 mock data 包成正式 API 介面：
 4. Server Component 重新抓取對應頁面的資料
 5. `scroll: false` 會避免 Next.js 主動將頁面捲到頂部
 
-### 7. 首屏 Hero 視覺邏輯
+### 7. 🎨 首屏 Hero 視覺邏輯
 
 `components/home/HeroSection.tsx` 為 client component，負責首頁視覺與互動動畫：
 
@@ -243,7 +243,7 @@ App Router API routes 負責將 mock data 包成正式 API 介面：
 - 左右眼會依滑鼠移動做小幅跟隨
 - 若使用者偏好 reduced motion，動畫會降級或停用
 
-## 測試
+## 🧪 測試
 
 目前專案已配置：
 
@@ -257,7 +257,7 @@ pnpm test
 pnpm test:e2e
 ```
 
-## 補充
+## 📝 補充
 
 - 字體於 `app/layout.tsx` 使用 `next/font/local` 載入
 - 首頁 metadata 目前設定為 `HeeLoo Jobs`
